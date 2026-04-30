@@ -100,7 +100,7 @@ class Collidable {
         //debug 
         virtual void Draw(Renderer* renderer, color c, int a = 255, RenderLayer layer = RenderLayer::DEBUG) {
             CollisionShape s = GetCollisionBound();
-            Vector2 wp = GetPosition();
+            Vector2 wp = s.WorldPosition(GetPosition());
             switch (s.type) {
                 case ShapeType::Square:
                     renderer->AddDebugRect(wp.x, wp.y, s.box.width, s.box.height, c, a, layer);

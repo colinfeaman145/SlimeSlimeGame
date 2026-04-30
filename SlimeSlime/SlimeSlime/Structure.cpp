@@ -25,7 +25,7 @@ Structure::~Structure() {
 
 bool Structure::Initialize(Sprite* spr, bool canCollide) {
     sprite = spr->Clone();
-    sprite->SetDrawLayer(RenderLayer::STRUCTURES);
+    sprite->SetDrawLayer(RenderLayer::STRUCTURES, position.y + sprite->GetHeight());
     Vector2 size = sprite->GetDrawSize();
     collisionBound = CollisionShape::MakeAABB(size.x, size.y);
     SetCanCollide(canCollide);
@@ -51,6 +51,7 @@ void Structure::Process(float deltaTime, GameContext& context) {
 void Structure::SetPosition(Vector2 pos) {
     position = pos;
     sprite->SetPosition(position);
+    sprite->SetDrawLayer(RenderLayer::STRUCTURES, position.y);
 }
 
 void Structure::HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) {

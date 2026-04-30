@@ -1,6 +1,7 @@
 #ifndef GAMECONTEXT_HPP
 #define GAMECONTEXT_HPP
 
+#include <random>
 #include "Renderer.hpp"
 #include "TextureManager.hpp"
 #include "FontManager.hpp"
@@ -11,6 +12,8 @@
 //class TextureManager;
 //class FontManager;
 //class AudioManager;
+
+static mt19937 gen(random_device{}());
 
 struct GameContext {
     Renderer* renderer;

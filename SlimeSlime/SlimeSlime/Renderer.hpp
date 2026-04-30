@@ -20,9 +20,10 @@ enum class RenderLayer {
     ENEMIES = 3,
     ATTACK_CONE = 4,
     PLAYER = 5,
-    PARTICLE = 6,
-    UI = 7,
-    DEBUG = 8
+    NATURE = 6,
+    PARTICLE = 7,
+    UI = 8,
+    DEBUG = 9
 };
 
 struct RenderCommand {

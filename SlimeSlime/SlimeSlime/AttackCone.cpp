@@ -6,10 +6,11 @@ AttackCone::AttackCone(int damage, int r, float ha) {
 	halfAngle = ha;
 }
 
-bool AttackCone::Initialize(Vector2 pos, Vector2 vel, Sprite* spr) {
+bool AttackCone::Initialize(Vector2 pos, Vector2 vel, AnimatedSprite* spr) {
 	Entity::Initialize(pos, vel, spr);
 	CollisionShape cs = CollisionShape::MakeCone(radius, Vector2(1.0, 0.0), halfAngle);
 	SetCollisionBound(cs);
+	swoosh = spr;
 	return true;
 }
 

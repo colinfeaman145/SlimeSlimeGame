@@ -25,6 +25,7 @@ public:
     void SetDrawSize(int w, int h);
     void SetDrawLayer(RenderLayer l, int sl = 0);
     int GetWidth() const { return dstRect.w; };
+    int GetHeight() const { return dstRect.h; };
     Vector2 GetPosition() const { return Vector2(dstRect.x, dstRect.y); }
     Vector2 GetDrawSize() const { return Vector2(dstRect.w, dstRect.h); }
     float GetRotation() const { return rotation; }

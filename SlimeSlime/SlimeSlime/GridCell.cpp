@@ -5,12 +5,13 @@
 #include <algorithm>
 
 GridCell::GridCell(Sprite* spr){
+    coords = { -1, -1 };
     sprite = spr;
     strctr = nullptr;
     entities.reserve(16);
     for (int i = 0; i < 2; ++i) {
         walls[i] = nullptr;
-        holdingHologramWall[i] == false;
+        holdingHologramWall[i] = false;
     }
     holdingHologramStruct = false;
 }
@@ -21,12 +22,18 @@ void GridCell::SetSprite(Sprite* spr) {
 
 void GridCell::SetPosition(Vector2 worldPos) {
     if (sprite) sprite->SetPosition((int)worldPos.x, (int)worldPos.y);
+    position = worldPos;
+}
+
+void GridCell::SetCoords(GridCoord gridPos) {
+    coords = gridPos;
 }
 
 void GridCell::Draw(Renderer* renderer) {
     if (sprite) sprite->Draw(renderer);
     if (strctr) strctr->Draw(renderer);
     DrawWalls(renderer);
+    DrawNature(renderer);
 }
 
 void GridCell::Process(float deltaTime, GameContext& context) {
@@ -43,6 +50,12 @@ void GridCell::DrawWalls(Renderer* renderer) {
 void GridCell::ProcessWalls(float deltaTime, GameContext& context) {
     if (walls[(int)EdgeDirection::NORTH])  walls[(int)EdgeDirection::NORTH]->Process(deltaTime, context);
     if (walls[(int)EdgeDirection::WEST]) walls[(int)EdgeDirection::WEST]->Process(deltaTime, context);
+}
+
+void GridCell::DrawNature(Renderer* renderer) {
+    for (Nature* n : nature) {
+        n->Structure::Draw(renderer);
+    }
 }
 
 
@@ -75,6 +88,9 @@ vector<Collidable*> GridCell::GetCollidables() const {
     for (int i = 0; i < 2; ++i)
         if (walls[i] && !holdingHologramWall[i])
             result.push_back(walls[i]);
+
+    for (Structure* n : nature)
+        result.push_back(n);
 
     return result;
 }
@@ -131,4 +147,21 @@ Structure* GridCell::GetWall(EdgeDirection dir) const {
 void GridCell::SetHoldingHologramWall(bool b, EdgeDirection dir) {
     int i = (int)dir;
     holdingHologramWall[i] = b;
+}
+
+
+//NATURE
+void GridCell::PlaceNature(Nature* structure) {
+    nature.push_back(structure);
+
+    int cellWidth = sprite->GetWidth();//this is ghetto but it works
+    uniform_int_distribution<int> localLocationGen(cellWidth * 0.1, cellWidth * 0.9);
+    Vector2 localOffset = Vector2(localLocationGen(gen), localLocationGen(gen));
+    Vector2 worldPosition = position + localOffset;
+    structure->SetPosition(worldPosition);
+}
+
+void GridCell::RemoveNature(Nature* structure) {
+    nature.erase(remove(nature.begin(), nature.end(), structure), nature.end());
+    delete structure;
 }

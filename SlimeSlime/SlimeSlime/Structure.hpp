@@ -9,7 +9,7 @@
 
 class Grid;
 
-class Structure : public Element, public Collidable {
+class Structure : public virtual Element, public virtual Collidable {
 public:
     Structure();
     Structure(const Structure& other);
@@ -32,6 +32,8 @@ public:
 protected:
     Sprite* sprite;
     Vector2 position;
+    int maxHealth;
+    int health;
 };
 
 #endif

@@ -20,9 +20,17 @@ public:
     void SetSpeed(float spd);
     float GetX() const { return x; }
     float GetY() const { return y; }
-    int GetWidth() const { return HEIGHT; }
-    int GetHeight() const { return WIDTH; }
+    int GetWidth() const { return WIDTH; }
+    int GetHeight() const { return HEIGHT; }
     float GetZoom() const { return zoom; }
+    SDL_Rect GetViewportWorldRect() const {
+        return {
+            (int)x,
+            (int)y,
+            (int)(WIDTH / zoom),
+            (int)(HEIGHT / zoom)
+        };
+    }
 
 private:
     float x, y;

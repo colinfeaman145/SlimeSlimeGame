@@ -2,11 +2,12 @@
 #define ATTACK_CONE_HPP
 
 #include "Entity.hpp"
+#include "AnimatedSprite.hpp"
 
 class AttackCone : public Entity {
 	public:
 		AttackCone(int damage = 10, int r = 100, float ha = (PI/6));
-		bool Initialize(Vector2 pos, Vector2 vel = Vector2(0, 0), Sprite* spr = nullptr);
+		bool Initialize(Vector2 pos, Vector2 vel = Vector2(0, 0), AnimatedSprite* spr = nullptr);
 		void Draw(Renderer* renderer) override;
 		void SetTargetPosition(Vector2 target);
 		void IncreaseAttackDamage(int damage);
@@ -19,6 +20,7 @@ class AttackCone : public Entity {
 		int attackDamage;
 		int radius;
 		float halfAngle;
+		AnimatedSprite* swoosh;
 };
 
 #endif

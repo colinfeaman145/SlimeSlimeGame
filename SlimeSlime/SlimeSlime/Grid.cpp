@@ -29,9 +29,12 @@ Grid::~Grid() {
 }
 
 //TODO accept file path and construct grid accordingly
-bool Grid::Initialize(SDL_Texture* cellTexture) {
+bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
     cells = new GridCell** [gridHeight];
+    uniform_int_distribution<int> startNatureGen(1, 10);
+    uniform_int_distribution<int> natureTypeGen(1, 20);//30% tree 5% stump 40% rock 15% bush
 
+    printf("MAKING WORLD GRID\n");
     for (int row = 0; row < gridHeight; ++row) {
         cells[row] = new GridCell* [gridWidth];
         for (int col = 0; col < gridWidth; ++col) {
@@ -40,17 +43,56 @@ bool Grid::Initialize(SDL_Texture* cellTexture) {
             spr->SetColor({ 220, 255, 220 });
 
             GridCell* cell = new GridCell(spr);
+            cell->SetCoords(GridCoord(col, row));
             cell->SetPosition(GridToWorld({ col, row }));
             cell->GetSprite()->SetDrawLayer(RenderLayer::GROUND);
             cells[row][col] = cell;
+        }
+    }
+    //after all cells initialized, fuck with 
+    printf("PLACING NATURE\n");
+    for (int row = 0; row < gridHeight; ++row) {
+        for (int col = 0; col < gridWidth; ++col) {
+            if (startNatureGen(gen) == 1) {
+                int nt = natureTypeGen(gen);
+                NatureType type;
+                if (1 <= nt && nt <= 6)
+                    type = NatureType::TREE;
+                else if (7 <= nt && nt <= 7)
+                    type = NatureType::STUMP;
+                else if (8 <= nt && nt <= 15)
+                    type = NatureType::ROCK;
+                else if (16 <= nt && nt <= 20)
+                    type = NatureType::BUSH;
+
+                GridCell* cell = GetCell(GridCoord(col, row));
+                PlaceNature(uniform_int_distribution<int>(1, 4), type, cell, context);//default 75% chance to spread
+                PlaceFoliage(uniform_int_distribution<int>(1, 1), cell, context);
+            }
+        }
+    }
+    //always place flowers :)
+    printf("ADDING ADDITIONAL FOLIAGE\n");
+    for (int row = 0; row < gridHeight; ++row) {
+        for (int col = 0; col < gridWidth; ++col) {
+            GridCell* cell = GetCell(GridCoord(col, row));
+            PlaceFoliage(uniform_int_distribution<int>(3, 3), cell, context);
         }
     }
     return true;
 }
 
 void Grid::Draw(Renderer* renderer) {
-    for (int row = 0; row < gridHeight; ++row)
-        for (int col = 0; col < gridWidth; ++col)
+    SDL_Rect vp = renderer->cam->GetViewportWorldRect();
+
+    int padding = 4;
+    int minCol = max(0, (int)floor((float)vp.x / cellSize) - padding);
+    int maxCol = min(gridWidth - 1, (int)ceil((float)(vp.x + vp.w) / cellSize) + padding);
+    int minRow = max(0, (int)floor((float)vp.y / cellSize) - padding);
+    int maxRow = min(gridHeight - 1, (int)ceil((float)(vp.y + vp.h) / cellSize) + padding);
+
+    for (int row = minRow; row <= maxRow; ++row)
+        for (int col = minCol; col <= maxCol; ++col)
             cells[row][col]->Draw(renderer);
 }
 
@@ -221,9 +263,9 @@ vector<Collidable*> Grid::GetNearbyCollidables(GridCoord coord, int radius) {
 //}
 
 //check if entity collides with anything. Act if they do
-void Grid::ResolveCollisions(Entity* entity, GameContext& context) {
+bool Grid::ResolveCollisions(Entity* entity, GameContext& context) {
 
-    if (!entity) return;
+    if (!entity) return false;
 
     //find search area
     const GridOccupancy& occ = entity->GetOccupancy();
@@ -245,8 +287,10 @@ void Grid::ResolveCollisions(Entity* entity, GameContext& context) {
         {
             entity->HandleCollision(other, penetration, context);
             other->HandleCollision(entity, -penetration, context);
+            return true;
         }
     }
+    return false;
 }
 
 
@@ -295,4 +339,84 @@ bool Grid::RemoveWall(GridCoord coord, EdgeDirection dir) {
 
     cell->RemoveWall(dir);
     return true;
+}
+
+
+//Nature
+void Grid::PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell, GameContext& context) {
+    uniform_int_distribution<int> changeType(1, 10);
+
+    if (spreadChance(gen) != 3) return;//only spread when chance hits
+
+    Nature* nature = nullptr;
+    //Are we changing nature type?
+    switch(changeType(gen)) {
+        case(1)://yes 
+            nature = GetRandomTree(context, GetCellSize());
+            break;
+        case(2):
+            nature = GetRandomRock(context, GetCellSize());
+            break;
+        case(3):
+            nature = GetRandomBush(context, GetCellSize());
+            break;
+        case(4):
+            nature = GetRandomStump(context, GetCellSize());
+            break;
+        default://no
+            switch (type) {//fuck everything, nested switch
+                case(NatureType::TREE):
+                    nature = GetRandomTree(context, GetCellSize());
+                    break;
+                case(NatureType::ROCK):
+                    nature = GetRandomRock(context, GetCellSize());
+                    break;
+                case(NatureType::BUSH):
+                    nature = GetRandomBush(context, GetCellSize());
+                    break;
+                case(NatureType::STUMP):
+                    nature = GetRandomStump(context, GetCellSize());
+                    break;
+                case(NatureType::FOLIAGE):
+                    nature = GetRandomFoliage(context, GetCellSize());
+                    break;
+            }
+    };
+    cell->PlaceNature(nature);
+
+    UpdateEntity(nature);
+    if (ResolveCollisions(nature, context)) {// overlaps something, don't place it
+        RemoveEntity(nature);
+        cell->RemoveNature(nature);
+        return;
+    }
+    
+    //recurse
+    vector<GridCell*> neighbors = GetNeighbourCells(cell->GetCoords(), 1);
+    for (GridCell* c : neighbors) {
+        PlaceNature(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 3), nature->GetNatureType(), c, context);
+    }
+}
+
+void Grid::PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell, GameContext& context) {
+
+    if (spreadChance(gen) != 3) return;//only spread when chance hits
+
+    Nature* nature = nullptr;
+    for (int i = 0; i < 3; i++) {
+        nature = GetRandomFoliage(context, cellSize);
+        cell->PlaceNature(nature);
+        UpdateEntity(nature);
+        if (ResolveCollisions(nature, context)) {// overlaps something, don't place it
+            RemoveEntity(nature);
+            cell->RemoveNature(nature);
+            return;
+        }
+    }
+
+    //recurse
+    vector<GridCell*> neighbors = GetNeighbourCells(cell->GetCoords(), 1);
+    for (GridCell* c : neighbors) {
+        PlaceNature(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 1), nature->GetNatureType(), c, context);
+    }
 }

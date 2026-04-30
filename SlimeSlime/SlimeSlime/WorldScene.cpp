@@ -1,4 +1,5 @@
 #include "WorldScene.hpp"
+#include "Nature.hpp"
 
 WorldScene::WorldScene() : time(0.0f) {
 }
@@ -57,7 +58,7 @@ bool WorldScene::Initialize(GameContext& context) {
     grid = new Grid(30000, 20009, 150);
     SDL_Texture* squareTex = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
     SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
-    grid->Initialize(grassTex);
+    grid->Initialize(grassTex, context);
     elements.push_back(grid);
 
     //make strucutre
@@ -102,7 +103,7 @@ void WorldScene::Process(GameContext& context, float deltaTime) {
     }
 
     grid->UpdateEntity(player);
-    grid->ResolveCollisions(player, context);
+    grid->ResolveCollisions(player, context); //collison updates
     attackCone->SetPosition(player->GetPosition());//follow player
     attackCone->SetTargetPosition(context.im->GetMouseWorldPosition(context.renderer->cam));//cone points to mouse
     context.renderer->cam->Follow(player->GetPosition());//follow player
@@ -134,18 +135,16 @@ void WorldScene::PlaceStructure(GameContext& context, bool isHologram) {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
     GridCoord coord = grid->WorldToGrid(vec2);
-    //printf("HAS WALL %d\n", grid->GetCell(grid->WorldToGrid(vec2))->HasWall(EdgeDirection::WEST));
 
     if (!isHologram) RemoveHoverEffect(coord, context);
     if (currentStructure == 1) {
         grid->PlaceWall(coord, EdgeDirection::NORTH, wallH);
-        //printf("HAS WALL %d\n", grid->GetCell(grid->WorldToGrid(vec2))->HasWall(EdgeDirection::NORTH));
     }
     else if (currentStructure == 2) {
         grid->PlaceWall(coord, EdgeDirection::WEST, wallV);
     }
     else if (currentStructure == 3) {
-        grid->PlaceStructure(st, coord);
+        grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);
     }
 }
 

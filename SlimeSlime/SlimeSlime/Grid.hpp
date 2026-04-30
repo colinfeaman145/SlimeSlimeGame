@@ -13,7 +13,7 @@ class Grid : public Element {
 public:
     Grid(int worldWidth, int worldHeight, int cellSize);
     ~Grid();
-    bool Initialize(SDL_Texture* cellSprite);
+    bool Initialize(SDL_Texture* cellSprite, GameContext& context);
     void Draw(Renderer* renderer) override;
     void Process(float deltaTime, GameContext& context) override;
 
@@ -35,14 +35,17 @@ public:
     vector<GridCell*> GetNeighbourCells(GridCoord coord, int radius);
     vector<Entity*> GetNearbyEntities(GridCoord coord, int radius);
     vector<Collidable*> GetNearbyCollidables(GridCoord coord, int radius);
-    void ResolveCollisions(Entity* entity, GameContext& context);
+    bool ResolveCollisions(Entity* entity, GameContext& context);
 
-    int GetCellSize()   const { return cellSize; }
-    int GetGridWidth()  const { return gridWidth; }
+    int GetCellSize() const { return cellSize; }
+    int GetGridWidth() const { return gridWidth; }
     int GetGridHeight() const { return gridHeight; }
 
     bool PlaceWall(GridCoord coord, EdgeDirection dir, Structure* w);
     bool RemoveWall(GridCoord coord, EdgeDirection dir);
+
+    void PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell, GameContext& context);
+    void PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell, GameContext& context);
 
 private:
     int cellSize;

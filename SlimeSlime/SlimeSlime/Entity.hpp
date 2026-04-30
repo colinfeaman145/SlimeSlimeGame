@@ -22,7 +22,7 @@ enum class MovementDir {
 class Renderer;
 class Sprite;
 
-class Entity : public Element, public Collidable
+class Entity : public virtual Element, public virtual Collidable
 {
 protected:
 	Sprite* sprite;
