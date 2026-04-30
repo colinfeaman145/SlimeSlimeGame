@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="SlimeSlime/SlimeSlime.vcxproj" Id="1d4e3431-a1b4-4711-98ab-a78a20943022" />
+</Solution>

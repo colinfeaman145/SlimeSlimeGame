@@ -1,0 +1,12 @@
+{
+    "move_left":    ["left", "a"],
+    "move_right":   ["right", "d"],
+    "move_up":      ["up", "w"],
+    "move_down":    ["down", "s"],
+    "change_scene": ["tab"],
+    "pause":        ["escape"],
+    "build_mode":   ["b"],
+    "vertical_wall": ["1"],
+    "horizontal_wall": ["2"],
+    "trap":         ["3"]
+}
