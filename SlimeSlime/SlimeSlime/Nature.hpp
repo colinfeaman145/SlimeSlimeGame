@@ -20,12 +20,12 @@ static Structure* bush2;
 static Structure* bush3;
 static Structure* bush4;
 static Structure* foliage1;
-static Structure* foiage;
-static Structure* bush4;
-static Structure* bush4;
-static Structure* bush4;
-static Structure* bush4;
-static Structure* bush4;
+static Structure* foiage2;
+static Structure* foliage3;
+static Structure* foliage4;
+static Structure* foliage5;
+static Structure* foliage6;
+static Structure* foliage7;
 
 static Structure* GetRandomTree();
 static Structure* GetRandomRock();
