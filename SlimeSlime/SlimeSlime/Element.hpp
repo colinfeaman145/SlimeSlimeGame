@@ -4,7 +4,7 @@
 #include "Renderer.hpp"
 #include "Collidable.hpp"
 
-#define DEBUGMODE false
+#define DEBUGMODE true
 //VIRTUAL CLASS
 class Element {
 	public:

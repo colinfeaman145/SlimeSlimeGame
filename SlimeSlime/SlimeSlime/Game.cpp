@@ -15,7 +15,7 @@ Sprites call drawTexture to renderer
 Game::Game() {
     //define context
     context.renderer = new Renderer();
-    context.renderer->Initialize("GameName", WIDTH, HEIGHT, false);
+    context.renderer->Initialize("Slime Slime Game", WIDTH, HEIGHT, false);
     context.txm = new TextureManager();
     context.fm = new FontManager();
     context.am = new AudioManager();
@@ -128,7 +128,7 @@ void Game::Process(float deltaTime, GameContext& context) {
             scene->ChangeStructure(1, context);
         }
         if (context.im->IsMouseButtonPressed(1)) {
-            scene->PlaceStructure(context);
+            scene->LeftMouseClick(context);
         }
         if (context.im->IsMouseButtonPressed(3)) {
             scene->RemoveStructure(context);

@@ -11,7 +11,7 @@
 class Vector2;
 
 using namespace std;
-class Vector2{
+class Vector2 {
 public:
     float x;
     float y;
@@ -19,8 +19,8 @@ public:
     inline Vector2();
     inline Vector2(float a, float b);
 
-    inline const Vector2& operator+() const{ return *this; }
-    inline Vector2 operator-() const{ return Vector2(-x, -y); }
+    inline const Vector2& operator+() const { return *this; }
+    inline Vector2 operator-() const { return Vector2(-x, -y); }
 
     inline Vector2& operator+=(const Vector2& v2);
     inline Vector2& operator-=(const Vector2& v2);
@@ -115,17 +115,22 @@ inline Vector2 Vector2::Normalized(){
     return Vector2(x / length, y / length);
 }
 
-inline float DotProduct(const Vector2& v1, const Vector2& v2) {
+inline static float DotProduct(const Vector2& v1, const Vector2& v2) {
     return (v1.x * v2.x) + (v1.y * v2.y);
 }
 
-inline Vector2 Reflect(const Vector2& v, const Vector2& n) {
+inline static Vector2 Reflect(const Vector2& v, const Vector2& n) {
     return v - (2 * DotProduct(v, n) * n);
 }
 
-inline Vector2 Lerp(const Vector2& v1, const Vector2& v2, float time) {
+inline static Vector2 Lerp(const Vector2& v1, const Vector2& v2, float time) {
     return (Vector2(v1 + time * (v2 - v1)));
 }
 
+inline static float Distance(const Vector2& v1, const Vector2 v2) {
+    float dx = v1.x - v2.x;
+    float dy = v1.y - v2.y;
+    return sqrt(dx * dx + dy * dy);
+}
 
 #endif

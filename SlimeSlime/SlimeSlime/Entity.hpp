@@ -2,6 +2,7 @@
 #define ENTITY_HPP
 #include "Element.hpp"
 #include "Collidable.hpp"
+#include "Attackable.hpp"
 
 struct GridOccupancy {
 	int minCol, maxCol, minRow, maxRow;
@@ -22,7 +23,7 @@ enum class MovementDir {
 class Renderer;
 class Sprite;
 
-class Entity : public virtual Element, public virtual Collidable
+class Entity : public virtual Element, public virtual Collidable, public virtual Attackable
 {
 protected:
 	Sprite* sprite;
@@ -42,6 +43,8 @@ public:
 	void Rotate(float direction);
 	bool IsAlive() const;
 	void SetDead();
+	void Damage(int amount);
+	void Heal(int amount);
 	float GetRadius();
 	Vector2 GetFacingDirection();
 	Vector2 GetPosition() override; 
@@ -52,6 +55,9 @@ public:
 	void SetMovementSpeed(float speed);
 	void SetPosition(Vector2 pos);
 	void Move(MovementDir m, float deltaTime);
+
+	virtual ResourceType GetDropType() const { return ResourceType::COIN; }
+	virtual int GetDropAmount() const { return ((health / 10) * dropVariance(gen)); }
 
 	GridOccupancy GetOccupancy() const;
 	void SetOccupancy(GridOccupancy occ);

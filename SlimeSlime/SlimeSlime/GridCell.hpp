@@ -9,7 +9,11 @@
 #include "Entity.hpp"
 #include "Collidable.hpp"
 #include "Collision.hpp"
-#include "Nature.hpp"
+#include "Resource.hpp"
+#include "Enemy.hpp"
+
+class Nature;
+class Foliage;
 
 using namespace std;
 class GridCell {
@@ -24,17 +28,21 @@ public:
     GridCoord GetCoords() const { return coords; }
     Vector2 GetPosition() const { return position; }
     void Draw(Renderer* renderer);
-    void Process(float deltaTime, GameContext& context);
+    void Process(float deltaTime, GameContext& context, bool isRendered);
     void DrawWalls(Renderer* renderer);
     void ProcessWalls(float deltaTime, GameContext& context);
     void DrawNature(Renderer* renderer);
+    void ProcessNature(float deltaTime, GameContext& context);
+    void DrawDrops(Renderer* renderer);
+    void ProcessDrops(float deltaTime, GameContext& context);
 
-    //entity management
-    void AddEntity(Entity* entity);
-    void RemoveEntity(Entity* entity);
-    void ClearEntities();
-    const vector<Entity*>& GetEntities() const { return entities; }
     vector<Collidable*> GetCollidables() const;
+
+    //enemy
+    void AddEnemy(Enemy* enemy);
+    void RemoveEnemy(Enemy* enemy);
+    void ClearEnemies();
+    const vector<Enemy*>& GetEnemies() const { return enemies; }
 
     //structures
     void AddStructure(Structure* structure);
@@ -51,19 +59,30 @@ public:
     void SetHoldingHologramWall(bool b, EdgeDirection dir);
 
     //nature
+    void SetNaturePosition(Nature* n);
     void PlaceNature(Nature* nature);
     void RemoveNature(Nature* nature);
+
+    //drops
+    void AddDrop(Resource* drop);
+    void RemoveDrop(Resource* drop);
+
+    //other entities
+    void AddOther(Entity* p);
+    void RemoveOther(Entity* p);
 
 private:
     GridCoord coords;
     Vector2 position;
     Sprite* sprite;
-    vector<Entity*> entities;
+    vector <Entity*> entities;//player, attackCone
+    vector<Enemy*> enemies;
+    vector<Nature*> nature;
+    vector<Resource*> drops;
     Structure* strctr;
     Structure* walls[2];
     bool holdingHologramStruct;
     bool holdingHologramWall[2];
-    vector<Nature*> nature;
 };
 
 #endif

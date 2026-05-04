@@ -1,32 +1,30 @@
 #ifndef NATURE_HPP
 #define NATURE_HPP
 
-#include "Structure.hpp"
 #include "GameContext.hpp"
 #include "Entity.hpp"
+#include "ResourceType.hpp"
+#include "Sprite.hpp"
+#include "Grid.hpp"
+#include "NatureType.hpp"
 
-
-enum class NatureType {
-	TREE,
-	ROCK,
-	BUSH,
-	STUMP,
-	FOLIAGE
-};
-
-class Nature : public Structure, public Entity {
+class Nature : public Entity {
 public:
-	void Initialize(Sprite* spr, NatureType t, bool canCollide);
-	NatureType GetNatureType() const { return type; }
-	void SetPosition(Vector2 pos);
-	Vector2 GetPosition() override;
-	void Draw(Renderer* renderer) override;
-	void Process(float deltaTime, GameContext& context) override;
+		void Initialize(Sprite* spr, NatureType t, bool canCollide);
+		NatureType GetNatureType() const { return type; }
+		void SetPosition(Vector2 pos);
+		Vector2 GetPosition() override;
+		void Draw(Renderer* renderer) override;
+		void Process(float deltaTime, GameContext& context) override;
 
-	void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
-private:
-	Vector2 position;
-	NatureType type;
+		void Damage(int amount);
+		void Break();
+		ResourceType GetDropType() const override;
+		int GetDropAmount() const override;
+
+		void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
+	protected:
+		NatureType type;
 };
 
 static uniform_int_distribution<int> treeSpriteGen(1, 4);
@@ -41,8 +39,31 @@ static uniform_real_distribution<double> rockScaler(.5, 2.5);
 static uniform_real_distribution<double> stumpScaler(.5, 1);
 static uniform_real_distribution<double> bushScaler(.5, 1);
 
-static Nature* GetRandomTree(GameContext& context, int cellSize) {
+//calculates nature durability based on generated size and type
+static int CalculateDurability(int w, int h, int cellSize, NatureType type) {
+	double width = (double)w / cellSize; //adjusted based on cellSize
+	double height = (double)h / cellSize;
+	double area = width * height;
+
+	//NOTE: These numbers are made up. Math could be done, but
+	//I failed the first time, so chat stepped in.
+	switch (type) {
+		case NatureType::TREE:
+			return 75 + (area * 4.5);//95 - 165
+		case NatureType::ROCK:
+			return 130 + (area * 13.5);//132 - 236
+		case NatureType::STUMP:
+			return 65 + (area * 50);//77 - 129
+		case NatureType::BUSH:
+			return 48 + (area * 28);//51 - 83
+		case NatureType::FOLIAGE:
+			return 1;
+	}
+}
+
+static Nature* GetRandomTree(GameContext& context) {
 	int i = treeSpriteGen(gen);
+	int cellSize = context.grid->GetCellSize();
 
 	int scaler = treeScaler(gen);
 	int width = cellSize * widthGen(gen) * scaler;
@@ -78,12 +99,14 @@ static Nature* GetRandomTree(GameContext& context, int cellSize) {
 	}
 	n->Initialize(sprite, NatureType::TREE, true);
 	n->Collidable::SetCollisionBound(cs);
+	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::TREE));
 	
 	return n;
 }
 
-static Nature* GetRandomRock(GameContext& context, int cellSize) {
+static Nature* GetRandomRock(GameContext& context) {
 	int i = rockSpriteGen(gen);
+	int cellSize = context.grid->GetCellSize();
 
 	double scaler = rockScaler(gen);
 	int width = cellSize * widthGen(gen) * scaler;
@@ -121,12 +144,14 @@ static Nature* GetRandomRock(GameContext& context, int cellSize) {
 	n->Initialize(sprite, NatureType::ROCK, true);
 	CollisionShape cs = CollisionShape::MakeAABB(width, height * 0.5, Vector2(0, height * 0.4));
 	n->SetCollisionBound(cs);
+	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::ROCK));
 
 	return n;
 }
 
-static Nature* GetRandomStump(GameContext& context, int cellSize) {
+static Nature* GetRandomStump(GameContext& context) {
 	int i = stumpSpriteGen(gen);
+	int cellSize = context.grid->GetCellSize();
 
 	double scaler = stumpScaler(gen);
 	int width = cellSize * widthGen(gen) * scaler;
@@ -151,12 +176,14 @@ static Nature* GetRandomStump(GameContext& context, int cellSize) {
 	n->Initialize(sprite, NatureType::STUMP, true);
 
 	n->SetCollisionBound(cs);
+	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::STUMP));
 
 	return n;
 }
 
-static Nature* GetRandomBush(GameContext& context, int cellSize) {
+static Nature* GetRandomBush(GameContext& context) {
 	int i = bushSpriteGen(gen);
+	int cellSize = context.grid->GetCellSize();
 
 	double scaler = bushScaler(gen);
 	int width = cellSize * widthGen(gen) * scaler;
@@ -191,53 +218,10 @@ static Nature* GetRandomBush(GameContext& context, int cellSize) {
 	n->Initialize(sprite, NatureType::BUSH, true);
 	
 	n->SetCollisionBound(cs);
+	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::BUSH));
 
 	return n;
 }
-static Nature* GetRandomFoliage(GameContext& context, int cellSize) {
-	int i = foliageSpriteGen(gen);
 
-	int width = cellSize * widthGen(gen) * 0.5;
-	int height = cellSize * heightGen(gen) * 0.5;
-
-	SDL_Texture* tex;
-	Sprite* sprite = new Sprite();
-	Nature* n = new Nature();
-	switch (i) {
-	case(1):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage1.png");
-		sprite->Initialize(tex, 48, 55, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	case(2):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage2.png");
-		sprite->Initialize(tex, 63, 69, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	case(3):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage3.png");
-		sprite->Initialize(tex, 67, 59, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	case(4):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage4.png");
-		sprite->Initialize(tex, 53, 62, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	case(5):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage5.png");
-		sprite->Initialize(tex, 46, 80, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	case(6):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage6.png");
-		sprite->Initialize(tex, 55, 62, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	case(7):
-		tex = context.txm->LoadTexture(context.renderer, "../../assets/nature/foliage/foliage7.png");
-		sprite->Initialize(tex, 51, 56, 0, 0, width, height, RenderLayer::NATURE);
-		break;
-	}
-	n->Initialize(sprite, NatureType::FOLIAGE, false);
-	CollisionShape cs = CollisionShape::MakeAABB(width, height);
-	n->SetCollisionBound(cs);
-
-	return n;
-}
 
 #endif

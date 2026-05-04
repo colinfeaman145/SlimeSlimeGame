@@ -55,7 +55,7 @@ bool WorldScene::Initialize(GameContext& context) {
     //am->PlaySound("Fart", "Default", {100, 100, 0}, {0, 0, 0});
 
     //make grid
-    grid = new Grid(30000, 20009, 150);
+    Grid* grid = new Grid(30000, 20000, 150);
     SDL_Texture* squareTex = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
     SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
     grid->Initialize(grassTex, context);
@@ -79,19 +79,27 @@ bool WorldScene::Initialize(GameContext& context) {
     wallV->Initialize(wallSprite, true);
 
     //make player
-    player = new Entity();
+    player = new Player();
     SDL_Texture* playerTex = context.txm->LoadTexture(context.renderer, "../../assets/ball.png");
     Sprite* playerSprite = new Sprite();
     playerSprite->Initialize(playerTex, 307, 307, 0, 0, 75, 75);
-    player->Initialize(Vector2(300, 300), Vector2(0, 0), playerSprite);
+    player->Initialize(Vector2(15000, 10000), 100, Vector2(0, 0), playerSprite);
     playerSprite->SetDrawLayer(RenderLayer::PLAYER);
     player->SetMovementSpeed(300);
+    context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     elements.push_back(player);
 
     //make attackCone
-    attackCone = new AttackCone(10, 200, PI / 5);
-    attackCone->Initialize(player->GetPosition());
-    elements.push_back(attackCone);
+    AttackCone* attackCone = new AttackCone(10, 200, PI / 5);
+    SDL_Texture* swooshTex = context.txm->LoadTexture(context.renderer, "../../assets/swoosh.png");
+    AnimatedSprite* swooshSpr = new AnimatedSprite();
+    swooshSpr->SetFrameDuration(0.05);
+    swooshSpr->SetLooping(false);
+    swooshSpr->Initialize(swooshTex, 1488, 654, 0, 0, grid->GetCellSize(), grid->GetCellSize(), 5, 10);
+    attackCone->Initialize(player->GetPosition(), swooshSpr);
+    context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
+
+    player->SetAttackCone(attackCone);
 
     return true;
 }
@@ -102,13 +110,10 @@ void WorldScene::Process(GameContext& context, float deltaTime) {
         e->Process(deltaTime, context);
     }
 
-    grid->UpdateEntity(player);
-    grid->ResolveCollisions(player, context); //collison updates
-    attackCone->SetPosition(player->GetPosition());//follow player
-    attackCone->SetTargetPosition(context.im->GetMouseWorldPosition(context.renderer->cam));//cone points to mouse
+    context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
+    context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
+    context.grid->ResolveCollisions(player, context); //collison updates
     context.renderer->cam->Follow(player->GetPosition());//follow player
-    //explosionFrameTime *= 0.999;
-    //((AnimatedSprite*)explosion->GetSprite())->SetFrameDuration(explosionFrameTime);
 
     //text->SetText(to_string((int)time));
 
@@ -131,36 +136,43 @@ void WorldScene::ToggleBuildMode() {
     buildMode = !buildMode;
 }
 
+void WorldScene::LeftMouseClick(GameContext& context) {
+    if (buildMode)
+        PlaceStructure(context);
+    else
+        Attack(context);
+}
+
 void WorldScene::PlaceStructure(GameContext& context, bool isHologram) {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCoord coord = grid->WorldToGrid(vec2);
+    GridCoord coord = context.grid->WorldToGrid(vec2);
 
     if (!isHologram) RemoveHoverEffect(coord, context);
     if (currentStructure == 1) {
-        grid->PlaceWall(coord, EdgeDirection::NORTH, wallH);
+        context.grid->PlaceWall(coord, EdgeDirection::NORTH, wallH);
     }
     else if (currentStructure == 2) {
-        grid->PlaceWall(coord, EdgeDirection::WEST, wallV);
+        context.grid->PlaceWall(coord, EdgeDirection::WEST, wallV);
     }
     else if (currentStructure == 3) {
-        grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);
+        //grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);
     }
 }
 
 void WorldScene::RemoveStructure(GameContext& context) {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCoord coord = grid->WorldToGrid(vec2);
+    GridCoord coord = context.grid->WorldToGrid(vec2);
 
     if (currentStructure == 1) {
-        grid->RemoveWall(coord, EdgeDirection::NORTH);
+        context.grid->RemoveWall(coord, EdgeDirection::NORTH);
     }
     else if (currentStructure == 2) {
-        grid->RemoveWall(coord, EdgeDirection::WEST);
+        context.grid->RemoveWall(coord, EdgeDirection::WEST);
     }
     else {
-        grid->RemoveStructure(coord);
+        context.grid->RemoveStructure(coord);
     }
 }
 
@@ -170,6 +182,14 @@ Entity* WorldScene::GetPlayer() {
 
 void WorldScene::MovePlayer(MovementDir dir, float deltaTime) {
     player->Move(dir, deltaTime);
+}
+
+void WorldScene::Attack(GameContext& context) {
+    AttackCone* cone = player->GetAttackCone();
+    if (cone->CanAttack()) {
+        context.grid->ResolveCollisions(cone, context);
+        cone->PlayAttack();
+    }
 }
 
 
@@ -182,16 +202,16 @@ void WorldScene::UpdateCurrentHoveredCell(GameContext& context) {
     }
 
     Vector2 pos = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCell* cell = grid->GetCell(grid->WorldToGrid(pos));
+    GridCell* cell = context.grid->GetCell(context.grid->WorldToGrid(pos));
     if (!cell) {
         RemoveHoverEffect(currentHoveredCellCoords, context);
         currentHoveredCellCoords = { -1, -1 };
         return;
     }
 
-    if (currentHoveredCellCoords != grid->WorldToGrid(pos)) {//if on a new cell
+    if (currentHoveredCellCoords != context.grid->WorldToGrid(pos)) {//if on a new cell
         RemoveHoverEffect(currentHoveredCellCoords, context);
-        currentHoveredCellCoords = grid->WorldToGrid(pos);
+        currentHoveredCellCoords = context.grid->WorldToGrid(pos);
     }
 
     ApplyHoverEffect(cell, context);
@@ -233,7 +253,7 @@ void WorldScene::ApplyHoverEffect(GridCell* cell, GameContext& context) {
 
 //remove hologram/red effect
 void WorldScene::RemoveHoverEffect(GridCoord coord, GameContext& context) {
-    GridCell* cell = grid->GetCell(currentHoveredCellCoords);
+    GridCell* cell = context.grid->GetCell(currentHoveredCellCoords);
     if (!cell) return;
     //walls
     if (currentStructure == 1 || currentStructure == 2) {

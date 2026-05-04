@@ -1,6 +1,7 @@
 #include "Entity.hpp"
 #include "Sprite.hpp"
 #include "Renderer.hpp"
+#include "Grid.hpp"
 
 Entity::Entity() {
     sprite = nullptr;
@@ -10,10 +11,12 @@ Entity::Entity() {
     alive = true;
     occupancy = { -1, -1, -1, -1 };
     canCollide = true;
+    SetHealth(100);
 }
 
 Entity::~Entity() {
     delete sprite;
+    sprite = nullptr;
 }
 
 bool Entity::Initialize(Vector2 pos, Vector2 vel, Sprite* spr) {
@@ -46,7 +49,12 @@ void Entity::Draw(Renderer* renderer){
     if (sprite) {
         sprite->Draw(renderer);
     }
-    if(DEBUGMODE) Collidable::Draw(renderer, {255, 0, 0});
+    if (DEBUGMODE) {
+        if(canCollide)
+            Collidable::Draw(renderer, {255, 0, 0});
+        else
+            Collidable::Draw(renderer, {0, 255, 0});
+    }
 }
 
 void Entity::Rotate(float direction) {
@@ -61,6 +69,17 @@ bool Entity::IsAlive()const {
 
 void Entity::SetDead() {
     alive = false;
+}
+
+void Entity::Damage(int amount) {
+    health -= amount;
+    if (health <= 0) SetDead();
+}
+
+void Entity::Heal(int amount) {
+    health += amount;
+    if (health >= maxHealth)
+        health = maxHealth;
 }
 
 float Entity::GetRadius() {
@@ -108,6 +127,7 @@ void Entity::SetMovementSpeed(float speed) {
 
 void Entity::SetPosition(Vector2 pos) {
     position = pos;
+    if(sprite) sprite->SetPosition(pos);
 }
 
 

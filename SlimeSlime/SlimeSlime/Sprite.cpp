@@ -16,6 +16,8 @@ Sprite::Sprite(const Sprite& other) {
     srcRect = other.srcRect;
     dstRect = other.dstRect;
     rotation = other.rotation;
+    layer = other.layer;
+    subLayer = other.subLayer;
 }
 
 Sprite* Sprite::Clone() const {

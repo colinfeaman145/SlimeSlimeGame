@@ -1,8 +1,8 @@
 #include "Grid.hpp"
-#include "Structure.hpp"
 #include "Renderer.hpp"
 #include <algorithm>
 #include <cmath>
+#include <unordered_set>
 
 Grid::Grid(int worldWidth, int worldHeight, int cellSize)
     : cellSize(cellSize)
@@ -30,6 +30,9 @@ Grid::~Grid() {
 
 //TODO accept file path and construct grid accordingly
 bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
+
+    context.grid = this;
+
     cells = new GridCell** [gridHeight];
     uniform_int_distribution<int> startNatureGen(1, 10);
     uniform_int_distribution<int> natureTypeGen(1, 20);//30% tree 5% stump 40% rock 15% bush
@@ -66,8 +69,7 @@ bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
                     type = NatureType::BUSH;
 
                 GridCell* cell = GetCell(GridCoord(col, row));
-                PlaceNature(uniform_int_distribution<int>(1, 4), type, cell, context);//default 75% chance to spread
-                PlaceFoliage(uniform_int_distribution<int>(1, 1), cell, context);
+                PlaceNature(uniform_int_distribution<int>(2, 4), type, cell, context);//default 75% chance to spread
             }
         }
     }
@@ -76,7 +78,7 @@ bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
             GridCell* cell = GetCell(GridCoord(col, row));
-            PlaceFoliage(uniform_int_distribution<int>(3, 3), cell, context);
+            PlaceFoliage(uniform_int_distribution<int>(3, 4), cell, context);
         }
     }
     return true;
@@ -85,11 +87,11 @@ bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
 void Grid::Draw(Renderer* renderer) {
     SDL_Rect vp = renderer->cam->GetViewportWorldRect();
 
-    int padding = 4;
-    int minCol = max(0, (int)floor((float)vp.x / cellSize) - padding);
-    int maxCol = min(gridWidth - 1, (int)ceil((float)(vp.x + vp.w) / cellSize) + padding);
-    int minRow = max(0, (int)floor((float)vp.y / cellSize) - padding);
-    int maxRow = min(gridHeight - 1, (int)ceil((float)(vp.y + vp.h) / cellSize) + padding);
+    //draw only nearby cells
+    int minCol = max(0, (int)floor((float)vp.x / cellSize) - RENDER_DISTANCE);
+    int maxCol = min(gridWidth - 1, (int)ceil((float)(vp.x + vp.w) / cellSize) + RENDER_DISTANCE);
+    int minRow = max(0, (int)floor((float)vp.y / cellSize) - RENDER_DISTANCE);
+    int maxRow = min(gridHeight - 1, (int)ceil((float)(vp.y + vp.h) / cellSize) + RENDER_DISTANCE);
 
     for (int row = minRow; row <= maxRow; ++row)
         for (int col = minCol; col <= maxCol; ++col)
@@ -97,10 +99,19 @@ void Grid::Draw(Renderer* renderer) {
 }
 
 void Grid::Process(float deltaTime, GameContext& context) {
-    for (int row = 0; row < gridHeight; ++row)
-        for (int col = 0; col < gridWidth; ++col)
-            cells[row][col]->Process(deltaTime, context);
-    return;
+    SDL_Rect vp = context.renderer->cam->GetViewportWorldRect();
+
+    int minCol = max(0, (int)floor((float)vp.x / cellSize) - RENDER_DISTANCE);
+    int maxCol = min(gridWidth - 1, (int)ceil((float)(vp.x + vp.w) / cellSize) + RENDER_DISTANCE);
+    int minRow = max(0, (int)floor((float)vp.y / cellSize) - RENDER_DISTANCE);
+    int maxRow = min(gridHeight - 1, (int)ceil((float)(vp.y + vp.h) / cellSize) + RENDER_DISTANCE);
+
+    for (int row = 0; row < gridHeight; ++row) {
+        for (int col = 0; col < gridWidth; ++col) {
+            bool visible = row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
+            cells[row][col]->Process(deltaTime, context, visible);
+        }
+    }
 }
 
 
@@ -142,89 +153,24 @@ Vector2 Grid::SnapToGrid(Vector2 worldPos) const {
     return GridToWorld(coord);
 }
 
-
-//STRUCTURE MANAGEMENT
-bool Grid::CanPlaceStructure(GridCoord coord) const {
-    if (!IsValidCoord(coord)) return false;
-    return !cells[coord.row][coord.col]->HasStructure();
-}
-
-bool Grid::PlaceStructure(Structure* structure, GridCoord coord) {
-    if (!CanPlaceStructure(coord)) return false;
-    Structure* s = new Structure(*structure);
-
-    s->GetSprite()->SetDrawSize(cellSize, cellSize);
-    cells[coord.row][coord.col]->AddStructure(s);
-    s->SetPosition(GridToWorld(coord));
-    s->GetSprite()->SetDrawLayer(RenderLayer::STRUCTURES);
-    return true;
-}
-
-bool Grid::RemoveStructure(GridCoord coord) {
-    if (!IsValidCoord(coord)) return false;
-
-    GridCell* cell = cells[coord.row][coord.col];
-    if (!cell->HasStructure()) return false;
-
-    cell->RemoveStructure();
-    return true;
-}
-
-
-//ENTITY MANAGEMENT
-void Grid::UpdateEntity(Entity* entity) {
-    if (!entity || !entity->IsAlive()) return;
-
-    Vector2 pos = entity->GetPosition();
-    float r = entity->GetRadius();
-
-    GridOccupancy next = {
-        (int)floor((pos.x - r) / cellSize),
-        (int)floor((pos.x + r) / cellSize),
-        (int)floor((pos.y - r) / cellSize),
-        (int)floor((pos.y + r) / cellSize)
-    };
-
-    const GridOccupancy& prev = entity->GetOccupancy();
-    if (next == prev) return; //if no change, dont update anything
-
-    //Remove from old cells
-    for (int row = prev.minRow; row <= prev.maxRow; ++row) {
-        for (int col = prev.minCol; col <= prev.maxCol; ++col) {
-            if (GridCell* cell = GetCell(col, row))
-                cell->RemoveEntity(entity);
-        }
-    }
-
-    //Insert into new cells
-    for (int row = next.minRow; row <= next.maxRow; ++row) {
-        for (int col = next.minCol; col <= next.maxCol; ++col) {
-            if (GridCell* cell = GetCell(col, row))
-                cell->AddEntity(entity);
-        }
-    }
-
-    entity->SetOccupancy(next);
-}
-
-void Grid::RemoveEntity(Entity* entity) {
-    if (!entity) return;
+//returns cells the occupancy of entity is in
+vector<GridCell*> Grid::FindEntityCells(Entity* entity) {
+    vector<GridCell*> v;
+    if (!entity) return v;
 
     const GridOccupancy& occ = entity->GetOccupancy();
     for (int row = occ.minRow; row <= occ.maxRow; ++row) {
         for (int col = occ.minCol; col <= occ.maxCol; ++col) {
             if (GridCell* cell = GetCell(col, row))
-                cell->RemoveEntity(entity);
+                v.push_back(cell);
         }
     }
-
-    entity->SetOccupancy({ -1, -1, -1, -1 });
+    return v;
 }
 
 
 //NEIGHBOR CHECKING
 //returns cells in a radius of cell at input coordinates
-//likely to only be used as helper in GetNearbyEntities
 vector<GridCell*> Grid::GetNeighbourCells(GridCoord coord, int radius) {
     vector<GridCell*> result;
 
@@ -236,36 +182,24 @@ vector<GridCell*> Grid::GetNeighbourCells(GridCoord coord, int radius) {
     return result;
 }
 
-vector<Entity*> Grid::GetNearbyEntities(GridCoord coord, int radius) {
-    vector<Entity*> result;
-    for (GridCell* cell : GetNeighbourCells(coord, radius)) {
-        const auto& entities = cell->GetEntities();
-        result.insert(result.end(), entities.begin(), entities.end());//add all entities individually to result
-    }
-    return result;
-}
-
+//include 1 instance of all collidables in reachable cells
 vector<Collidable*> Grid::GetNearbyCollidables(GridCoord coord, int radius) {
     vector<Collidable*> result;
+    unordered_set<Collidable*> seen;
     for (GridCell* cell : GetNeighbourCells(coord, radius)) {
-        auto c = cell->GetCollidables();
-        result.insert(result.end(), c.begin(), c.end());
+        for (Collidable* c : cell->GetCollidables()) {
+            if (seen.insert(c).second) //insert returns false if already present
+                result.push_back(c);
+        }
     }
     return result;
 }
-
-//vector<Structure*> Grid::GetNearbyStructures(GridCoord coord, int radius) {
-//    vector<Structure*> result;
-//    for (GridCell* cell : GetNeighbourCells(coord, radius))
-//        if (cell->HasStructure())
-//            result.push_back(cell->GetStructure());
-//    return result;
-//}
 
 //check if entity collides with anything. Act if they do
 bool Grid::ResolveCollisions(Entity* entity, GameContext& context) {
 
     if (!entity) return false;
+    bool anyCollision = false;
 
     //find search area
     const GridOccupancy& occ = entity->GetOccupancy();
@@ -277,6 +211,7 @@ bool Grid::ResolveCollisions(Entity* entity, GameContext& context) {
 
     //check entities for collision
     for (Collidable* other : candidates) {
+        if (!other) continue;//if destroyed
         if (other == entity) continue;//if self
 
         Vector2 penetration;
@@ -287,136 +222,10 @@ bool Grid::ResolveCollisions(Entity* entity, GameContext& context) {
         {
             entity->HandleCollision(other, penetration, context);
             other->HandleCollision(entity, -penetration, context);
-            return true;
+            anyCollision = true;
         }
     }
-    return false;
+    return anyCollision;
 }
 
 
-//WALLS
-bool Grid::PlaceWall(GridCoord coord, EdgeDirection dir, Structure* w) {
-    GridCell* cell = GetCell(coord);
-    Structure* wall = new Structure(*w);
-
-    //get neighbor cell
-    GridCoord borderCellCoord = coord;
-    if (dir == EdgeDirection::NORTH) borderCellCoord.row--;
-    else if (dir == EdgeDirection::WEST) borderCellCoord.col--;
-    else return false;//invalid direciton
-
-    GridCell* borderCell = GetCell(borderCellCoord);//nullptr if invalid
-
-    if (!cell) return false;
-    if (borderCell == nullptr) return false;//trying to add wall to edge of map
-    if (cell->HasWall(dir)) return false;
-
-    // Calculate wall world position and rotation
-    Vector2 cellWorld = GridToWorld(coord);
-    Vector2 wallPos;
-
-    switch (dir) {
-        case EdgeDirection::NORTH:
-            wall->ChangeSize(cellSize * 1.25, cellSize * 0.25);
-            wallPos = Vector2(cellWorld.x - (cellSize * 0.125), cellWorld.y - (cellSize * 0.125));
-            break;
-        case EdgeDirection::WEST:
-            wall->ChangeSize(cellSize * 0.25, cellSize * 1.22);
-            wallPos = Vector2(cellWorld.x - (cellSize * 0.125), cellWorld.y - (cellSize * 0.125));
-            break;
-    }
-
-    wall->SetPosition(wallPos);
-    wall->GetSprite()->SetDrawLayer(RenderLayer::STRUCTURES);
-    cell->PlaceWall(dir, wall);
-
-    return true;
-}
-
-bool Grid::RemoveWall(GridCoord coord, EdgeDirection dir) {
-    GridCell* cell = GetCell(coord);
-    if (!cell || !cell->HasWall(dir)) return false;
-
-    cell->RemoveWall(dir);
-    return true;
-}
-
-
-//Nature
-void Grid::PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell, GameContext& context) {
-    uniform_int_distribution<int> changeType(1, 10);
-
-    if (spreadChance(gen) != 3) return;//only spread when chance hits
-
-    Nature* nature = nullptr;
-    //Are we changing nature type?
-    switch(changeType(gen)) {
-        case(1)://yes 
-            nature = GetRandomTree(context, GetCellSize());
-            break;
-        case(2):
-            nature = GetRandomRock(context, GetCellSize());
-            break;
-        case(3):
-            nature = GetRandomBush(context, GetCellSize());
-            break;
-        case(4):
-            nature = GetRandomStump(context, GetCellSize());
-            break;
-        default://no
-            switch (type) {//fuck everything, nested switch
-                case(NatureType::TREE):
-                    nature = GetRandomTree(context, GetCellSize());
-                    break;
-                case(NatureType::ROCK):
-                    nature = GetRandomRock(context, GetCellSize());
-                    break;
-                case(NatureType::BUSH):
-                    nature = GetRandomBush(context, GetCellSize());
-                    break;
-                case(NatureType::STUMP):
-                    nature = GetRandomStump(context, GetCellSize());
-                    break;
-                case(NatureType::FOLIAGE):
-                    nature = GetRandomFoliage(context, GetCellSize());
-                    break;
-            }
-    };
-    cell->PlaceNature(nature);
-
-    UpdateEntity(nature);
-    if (ResolveCollisions(nature, context)) {// overlaps something, don't place it
-        RemoveEntity(nature);
-        cell->RemoveNature(nature);
-        return;
-    }
-    
-    //recurse
-    vector<GridCell*> neighbors = GetNeighbourCells(cell->GetCoords(), 1);
-    for (GridCell* c : neighbors) {
-        PlaceNature(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 3), nature->GetNatureType(), c, context);
-    }
-}
-
-void Grid::PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell, GameContext& context) {
-
-    if (spreadChance(gen) != 3) return;//only spread when chance hits
-
-    Nature* nature = nullptr;
-    for (int i = 0; i < 3; i++) {
-        nature = GetRandomFoliage(context, cellSize);
-        cell->PlaceNature(nature);
-        UpdateEntity(nature);
-        if (ResolveCollisions(nature, context)) {// overlaps something, don't place it
-            RemoveEntity(nature);
-            cell->RemoveNature(nature);
-            return;
-        }
-    }
-
-    //recurse
-    vector<GridCell*> neighbors = GetNeighbourCells(cell->GetCoords(), 1);
-    for (GridCell* c : neighbors) {
-        PlaceNature(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 1), nature->GetNatureType(), c, context);
-    }
-}

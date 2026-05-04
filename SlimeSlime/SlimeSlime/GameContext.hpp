@@ -8,6 +8,8 @@
 #include "AudioManager.hpp"
 #include "InputManager.hpp"
 
+class Grid;
+
 //class Renderer;
 //class TextureManager;
 //class FontManager;
@@ -21,6 +23,7 @@ struct GameContext {
     FontManager* fm;
     AudioManager* am;
     InputManager* im;
+    Grid* grid;
 };
 
 #endif

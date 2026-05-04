@@ -95,25 +95,69 @@ namespace Collision {
         Vector2 bMin = box.box.Min(bWorld);
         Vector2 bMax = box.box.Max(bWorld);
 
-        // Full circle test first
+        //full circle test first
         CollisionShape fullCircle = cone;
         fullCircle.type = ShapeType::Circle;
-        if (!CircleVsAABB(fullCircle, conePos, box, boxPos, outPen)) return false; //sets outpen. Only used if also inside cone
+        if (!CircleVsAABB(fullCircle, conePos, box, boxPos, outPen)) return false;//sets outpen. Only used if also inside cone
 
-        //nearest point on box to cone center
-        float cx = clamp(center.x, bMin.x, bMax.x);
-        float cy = clamp(center.y, bMin.y, bMax.y);
+        //check if cone center is inside the box
+        if (center.x >= bMin.x && center.x <= bMax.x &&
+            center.y >= bMin.y && center.y <= bMax.y)
+            return true;
 
-        //distance from center to nearest point on box
-        float dx = cx - center.x;
-        float dy = cy - center.y;
-        float dist = std::sqrt(dx * dx + dy * dy);
+        //check all 4 corners of the AABB
+        Vector2 corners[4] = {
+            bMin,
+            { bMax.x, bMin.y },
+            bMax,
+            { bMin.x, bMax.y }
+        };
 
-        //center is inside box
-        if (dist == 0.0f) return true;
+        for (const Vector2& corner : corners) {
+            float dx = corner.x - center.x;
+            float dy = corner.y - center.y;
+            float dist = std::sqrt(dx * dx + dy * dy);
+            if (dist == 0.0f) return true;
+            if (dist <= cone.radius) {
+                Vector2 contactDir = { dx / dist, dy / dist };
+                if (InCone(contactDir, cone.direction, cone.halfAngle))
+                    return true;
+            }
+        }
 
-        Vector2 contactDir = { dx / dist, dy / dist };
-        return InCone(contactDir, cone.direction, cone.halfAngle);
+        //check nearest point on each edge. Needed only if cone hits 0 corners
+        struct Edge { Vector2 a, b; };
+        Edge edges[4] = {
+            { corners[0], corners[1] },  // top
+            { corners[1], corners[2] },  // right
+            { corners[2], corners[3] },  // bottom
+            { corners[3], corners[0]}   // left
+        };
+
+        for (const Edge& e : edges) {
+
+            //nearest point on segment to cone center
+            float edgeDx = e.b.x - e.a.x;
+            float edgeDy = e.b.y - e.a.y;
+            float lenSq = edgeDx * edgeDx + edgeDy * edgeDy;
+            float t = 0.0f;
+            if (lenSq > 0.0f)
+                t = clamp(((center.x - e.a.x) * edgeDx + (center.y - e.a.y) * edgeDy) / lenSq, 0.0f, 1.0f);
+            //t is a clamped value between 0 - 1 describing the position of the closest point on the edge
+
+            float px = e.a.x + t * edgeDx;
+            float py = e.a.y + t * edgeDy;
+            float dx = px - center.x;
+            float dy = py - center.y;
+            float dist = sqrt(dx * dx + dy * dy);
+
+            if (dist == 0.0f || dist > cone.radius) continue;
+            Vector2 contactDir = { dx / dist, dy / dist };
+            if (InCone(contactDir, cone.direction, cone.halfAngle))
+                return true;
+        }
+
+        return false;
     }
 
     inline bool ConeVsCircle(const CollisionShape& cone, Vector2 conePos, const CollisionShape& circle, Vector2 circlePos, Vector2& outPen) {

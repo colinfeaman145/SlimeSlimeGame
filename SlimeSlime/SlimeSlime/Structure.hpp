@@ -6,10 +6,11 @@
 #include "GridCoord.hpp"
 #include "Renderer.hpp"
 #include "Element.hpp"
+#include "Attackable.hpp"
 
 class Grid;
 
-class Structure : public virtual Element, public virtual Collidable {
+class Structure : public virtual Element, public virtual Collidable, public virtual Attackable {
 public:
     Structure();
     Structure(const Structure& other);
@@ -24,16 +25,25 @@ public:
     Vector2 GetPosition() override{ return position; }
     Sprite* GetSprite() const { return sprite; }
 
-    void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
-
+    bool IsBroken() const;
+    virtual void SetBroken(bool b);
     void SetPosition(Vector2 pos);
+    virtual void Damage(int amount);
+    void Heal(int amount);
+    void SetDurability(int d);
+    int GetDurability();
 
+    ResourceType GetDropType() const override;
+    int GetDropAmount() const override;
+
+    void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
 
 protected:
     Sprite* sprite;
     Vector2 position;
-    int maxHealth;
-    int health;
+    int maxDurability;
+    int durability;
+    bool broken;
 };
 
 #endif

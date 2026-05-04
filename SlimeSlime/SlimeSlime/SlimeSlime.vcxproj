@@ -139,16 +139,24 @@
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="Foliage.cpp" />
     <ClCompile Include="FontManager.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="GridCell.cpp" />
+    <ClCompile Include="GridDropsManager.cpp" />
+    <ClCompile Include="GridEnemyManager.cpp" />
+    <ClCompile Include="GridNatureManager.cpp" />
+    <ClCompile Include="GridStructureManager.cpp" />
+    <ClCompile Include="GridWallManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Nature.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Resource.cpp" />
     <ClCompile Include="WorldScene.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="Structure.cpp" />
@@ -157,13 +165,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatedSprite.hpp" />
+    <ClInclude Include="Attackable.hpp" />
     <ClInclude Include="AttackCone.hpp" />
     <ClInclude Include="AudioManager.hpp" />
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Collidable.hpp" />
     <ClInclude Include="Collision.hpp" />
     <ClInclude Include="Element.hpp" />
+    <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="Entity.hpp" />
+    <ClInclude Include="Foliage.hpp" />
     <ClInclude Include="FontManager.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="GameContext.hpp" />
@@ -172,9 +183,13 @@
     <ClInclude Include="GridCoord.hpp" />
     <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Nature.hpp" />
+    <ClInclude Include="NatureType.hpp" />
     <ClInclude Include="Particle.hpp" />
     <ClInclude Include="ParticleEmitter.hpp" />
+    <ClInclude Include="Player.hpp" />
     <ClInclude Include="Renderer.hpp" />
+    <ClInclude Include="Resource.hpp" />
+    <ClInclude Include="ResourceType.hpp" />
     <ClInclude Include="Scene.hpp" />
     <ClInclude Include="ShapeType.hpp" />
     <ClInclude Include="WorldScene.hpp" />

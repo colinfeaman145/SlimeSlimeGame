@@ -1,7 +1,6 @@
 #ifndef ANIMATED_SPRITE_HPP
 #define ANIMATED_SPRITE_HPP
 #include "Sprite.hpp"
-#include "GameContext.hpp"
 
 class AnimatedSprite : public Sprite {
 public:

@@ -4,6 +4,7 @@
 #include "Scene.hpp"
 #include "Grid.hpp"
 #include "AttackCone.hpp"
+#include "Player.hpp"
 
 class WorldScene : public Scene {
 public:
@@ -15,11 +16,13 @@ public:
     virtual void Draw(Renderer* renderer);
 
     void ToggleBuildMode();
+    void LeftMouseClick(GameContext& context);
     void ChangeStructure(int s, GameContext& context);
     void PlaceStructure(GameContext& context, bool isHologram = false);
     void RemoveStructure(GameContext& context);
     Entity* GetPlayer();
     void MovePlayer(MovementDir dir, float deltaTime);
+    void Attack(GameContext& context);
 
     void UpdateCurrentHoveredCell(GameContext& context);
     void ApplyHoverEffect(GridCell* cell, GameContext& context);
@@ -28,14 +31,12 @@ public:
 private:
     float time;
     
-    Entity* player;
-    AttackCone* attackCone;
+    Player* player;
     GridCoord currentHoveredCellCoords;
     Structure* st;
     Structure* wallH;
     Structure* wallV;
     Text* text;
-    Grid* grid;
     float explosionFrameTime;
     int currentStructure;
     bool buildMode;
