@@ -59,7 +59,7 @@ bool Renderer::Initialize(const string& windowTitle, int width, int height, bool
 }
 
 //actually draws texture to screen
-void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation, RenderLayer layer, int subOrder) {
+void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation, RenderLayer layer, int subOrder, bool bm) {
     if (!texture || !renderer) return;
 
     RenderCommand cmd;
@@ -73,6 +73,7 @@ void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* ds
     cmd.g = c.g;
     cmd.b = c.b;
     cmd.a = a;
+    cmd.blendMode = bm;
     renderQueue.push_back(cmd);
 }
 
@@ -109,10 +110,14 @@ void Renderer::EndFrame() {
 
 //draws normal sprites
 void Renderer::DrawSingleRenderCommand(const RenderCommand& cmd) {
-    SDL_SetTextureBlendMode(cmd.texture, SDL_BLENDMODE_BLEND);
+    if(cmd.blendMode)
+        SDL_SetTextureBlendMode(cmd.texture, SDL_BLENDMODE_ADD);
+    else
+        SDL_SetTextureBlendMode(cmd.texture, SDL_BLENDMODE_BLEND);
+
     SDL_SetTextureColorMod(cmd.texture, cmd.r, cmd.g, cmd.b);
     SDL_SetTextureAlphaMod(cmd.texture, cmd.a);
-    SDL_Rect v = cam->GetScreenRect(&cmd.dstRect);
+    SDL_Rect v = cmd.layer == RenderLayer::UI ? cmd.dstRect : cam->GetScreenRect(&cmd.dstRect);//UI elements are stagnant
     SDL_Point center = { v.w / 2, v.h / 2 };
     SDL_RenderCopyEx(renderer, cmd.texture, &cmd.srcRect, &v, cmd.rotation, &center, SDL_FLIP_NONE);
     SDL_SetTextureColorMod(cmd.texture, 255, 255, 255);
@@ -128,20 +133,27 @@ void Renderer::DrawSingleBoundingCommand(const BoundingDrawCommand& cmd) {
         DrawBoundingCircle((int)cmd.x, (int)cmd.y, cmd.radius);
     else if (cmd.type == ShapeType::Cone)
         DrawBoundingCone((int)cmd.x, (int)cmd.y, cmd.radius, cmd.direction, cmd.halfAngle);
+    else if (cmd.type == ShapeType::FilledSquare) {
+        DrawFilledRect((int)cmd.x, (int)cmd.y, (int)cmd.w, (int)cmd.h, cmd.c, (int)cmd.alpha);
+    }
 }
 
 
 //DEBUG DRAWING
-void Renderer::AddDebugRect(float x, float y, float w, float h, color c, int a, RenderLayer layer) {
+void Renderer::AddDrawRect(float x, float y, float w, float h, color c, int a, RenderLayer layer) {
     boundingQueue.push_back({ ShapeType::Square, x, y, w, h, 0, {0,0}, 0, c, a, layer });
 }
 
-void Renderer::AddDebugCircle(float cx, float cy, float radius, color c, int a, RenderLayer layer) {
+void Renderer::AddDrawCircle(float cx, float cy, float radius, color c, int a, RenderLayer layer) {
     boundingQueue.push_back({ ShapeType::Circle, cx, cy, 0, 0, radius, {0,0}, 0, c, a, layer });
 }
 
-void Renderer::AddDebugCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, color c, int a, RenderLayer layer) {
+void Renderer::AddDrawCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, color c, int a, RenderLayer layer) {
     boundingQueue.push_back({ ShapeType::Cone, cx, cy, 0, 0, radius, direction, halfAngle, c, a, layer});
+}
+
+void Renderer::AddFilledRect(float x, float y, float w, float h, color c, int a, RenderLayer layer) {
+    boundingQueue.push_back({ ShapeType::FilledSquare, x, y, w, h, 0, {0,0}, 0, c, a, layer });
 }
 
 void Renderer::DrawBoundingRect(int x, int y, int w, int h) {
@@ -191,4 +203,11 @@ void Renderer::DrawBoundingCone(int cx, int cy, int radius, Vector2 direction, f
         centerScreen.x, centerScreen.y,
         centerScreen.x + cos(right) * radius * zoom,
         centerScreen.y + sin(right) * radius * zoom);
+}
+
+void Renderer::DrawFilledRect(int x, int y, int w, int h, color c, int a) {
+    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, a);
+    SDL_Rect world = { x, y, w, h };
+    SDL_Rect screen = cam->GetScreenRect(&world);
+    SDL_RenderFillRect(renderer, &screen);
 }

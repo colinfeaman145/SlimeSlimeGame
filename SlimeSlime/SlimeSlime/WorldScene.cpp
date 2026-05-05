@@ -90,16 +90,58 @@ bool WorldScene::Initialize(GameContext& context) {
     elements.push_back(player);
 
     //make attackCone
-    AttackCone* attackCone = new AttackCone(10, 200, PI / 5);
+    AttackCone* attackCone = new AttackCone(15, 200, PI / 5, 0.75);
     SDL_Texture* swooshTex = context.txm->LoadTexture(context.renderer, "../../assets/swoosh.png");
     AnimatedSprite* swooshSpr = new AnimatedSprite();
-    swooshSpr->SetFrameDuration(0.05);
+    swooshSpr->SetFrameDuration(0.02);
     swooshSpr->SetLooping(false);
-    swooshSpr->Initialize(swooshTex, 1488, 654, 0, 0, grid->GetCellSize(), grid->GetCellSize(), 5, 10);
+    swooshSpr->Initialize(swooshTex, 307, 259, 0, 0, grid->GetCellSize(), grid->GetCellSize(), 5, 10);
     attackCone->Initialize(player->GetPosition(), swooshSpr);
     context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
 
     player->SetAttackCone(attackCone);
+
+    //UI
+    //wood
+    SDL_Texture* woodTex = context.txm->LoadTexture(context.renderer, "../../assets/log.png");
+    Sprite* woodIcon = new Sprite();
+    woodIcon->Initialize(woodTex, 410, 261, 0, 0, 35, 35);
+    woodIcon->SetDrawLayer(RenderLayer::UI);
+    woodIcon->SetPosition(Vector2(10, 10));
+    UI.push_back(woodIcon);
+
+    woodCount = new Text();
+    woodCount->Initialize(context, "0", "../../fonts/PROXON.ttf", 35);
+    woodCount->SetPosition(50, 10);
+    UI.push_back(woodCount);
+
+    //stone
+    SDL_Texture* stoneTex = context.txm->LoadTexture(context.renderer, "../../assets/stone.png");
+    Sprite* stoneIcon = new Sprite();
+    stoneIcon->Initialize(stoneTex, 404, 334, 0, 0, 35, 35);
+    stoneIcon->SetDrawLayer(RenderLayer::UI);
+    stoneIcon->SetPosition(Vector2(10, 50));
+    UI.push_back(stoneIcon);
+
+    stoneCount = new Text();
+    stoneCount->Initialize(context, "0", "../../fonts/PROXON.ttf", 35);
+    stoneCount->SetPosition(50, 50);
+    UI.push_back(stoneCount);
+
+    //coin
+    SDL_Texture* coinTex = context.txm->LoadTexture(context.renderer, "../../assets/coin.png");
+    Sprite* coinIcon = new Sprite();
+    coinIcon->Initialize(coinTex, 2195, 2195, 0, 0, 35, 35);
+    coinIcon->SetDrawLayer(RenderLayer::UI);
+    coinIcon->SetPosition(Vector2(10, 90));
+    UI.push_back(coinIcon);
+
+    coinCount = new Text();
+    coinCount->Initialize(context, "0", "../../fonts/PROXON.ttf", 35);
+    coinCount->SetPosition(50, 90);
+    UI.push_back(coinCount);
+
+
 
     return true;
 }
@@ -109,6 +151,10 @@ void WorldScene::Process(GameContext& context, float deltaTime) {
     for (Element* e : elements) {
         e->Process(deltaTime, context);
     }
+
+    woodCount->SetText(to_string(player->GetWood()));
+    stoneCount->SetText(to_string(player->GetStone()));
+    coinCount->SetText(to_string(player->GetCoins()));
 
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
@@ -122,6 +168,9 @@ void WorldScene::Process(GameContext& context, float deltaTime) {
 void WorldScene::Draw(Renderer* renderer) {
     for (Element* e : elements) {
         e->Draw(renderer);
+    }
+    for (Sprite* s : UI) {
+        s->Draw(renderer);
     }
 }
 
@@ -151,9 +200,15 @@ void WorldScene::PlaceStructure(GameContext& context, bool isHologram) {
     if (!isHologram) RemoveHoverEffect(coord, context);
     if (currentStructure == 1) {
         context.grid->PlaceWall(coord, EdgeDirection::NORTH, wallH);
+
+        if (!player->HasEnoughWood(wallH->GetBuildCost()) || isHologram) return;//if no have money, die
+        player->RemoveWood(wallH->GetBuildCost());
     }
     else if (currentStructure == 2) {
         context.grid->PlaceWall(coord, EdgeDirection::WEST, wallV);
+
+        if (!player->HasEnoughStone(wallV->GetBuildCost()) || isHologram) return;//if no have money, die
+        player->RemoveStone(wallV->GetBuildCost());
     }
     else if (currentStructure == 3) {
         //grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);

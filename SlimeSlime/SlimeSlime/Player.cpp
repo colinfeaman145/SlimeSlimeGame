@@ -11,25 +11,51 @@ void Player::Initialize(Vector2 pos, int pullRadius, Vector2 vel, Sprite* spr) {
 	coins = 0;
 	wood = 100;
 	stone = 0;
+
+
+	Vector2 size = sprite->GetDrawSize();
+	healthBar = new PercentageBar(health, maxHealth, size.x * 1.1, size.y * 0.2, { 255, 50, 50 }, { 150, 50, 50 });
+	healthBar->SetPosition(position.x, position.y);
+	healthBar->SetOffset(-(size.x * 0.05), (size.y * 0.7));
+
+	cooldownBar = nullptr;//need attackCone to define
 }
 
 void Player::Draw(Renderer* renderer) {
 	Entity::Draw(renderer);
 	attackCone->Draw(renderer);
+	if (cooldownBar && attackCone->GetCurrentAttackCooldownTime() > 0) 
+		cooldownBar->Draw(renderer);
 }
+
 void Player::Process(float deltaTime, GameContext& context) {
 	Entity::Process(deltaTime, context);
 	
-	//process attackCone
-	attackCone->ProcessDropQueue(itemPullRadius, context);
-	attackCone->SetPosition(GetPosition());//follow player
-	attackCone->SetTargetPosition(context.im->GetMouseWorldPosition(context.renderer->cam));//cone points to mouse
-	attackCone->Process(deltaTime, context);
+	//process attackCone & cooldown bar
+	if (attackCone) {
+		float curr = attackCone->GetCurrentAttackCooldownTime();
+		float cooldownTime = attackCone->GetCooldownTime();
+		cooldownBar->SetValues(cooldownTime - curr, cooldownTime);
+		cooldownBar->SetPosition(position.x, position.y);
+
+		attackCone->ProcessDropQueue(itemPullRadius, context);
+		attackCone->SetPosition(GetPosition());//follow player
+		attackCone->SetTargetPosition(context.im->GetMouseWorldPosition(context.renderer->cam));//cone points to mouse
+		attackCone->Process(deltaTime, context);
+	}
 }
 
 
 void Player::SetAttackCone(AttackCone* ac) {
 	attackCone = ac;
+
+	//define cooldown bar
+	Vector2 size = sprite->GetDrawSize();
+	float curr = attackCone->GetCurrentAttackCooldownTime();
+	float cooldownTime = attackCone->GetCooldownTime();
+	cooldownBar = new PercentageBar(cooldownTime - curr, cooldownTime, size.x * 1.1, size.y * 0.2, { 50, 50, 255 }, { 50, 50, 150 });
+	cooldownBar->SetPosition(position.x, position.y);
+	cooldownBar->SetOffset(-(size.x * 0.05), (size.y * 0.95));
 }
 
 AttackCone* Player::GetAttackCone() {

@@ -15,7 +15,7 @@ class AttackCone : public Entity {
 		void Draw(Renderer* renderer) override;
 		void Process(float deltaTime, GameContext& context) override;
 		void SetTargetPosition(Vector2 target);
-		
+
 		bool CanAttack();
 		void PlayAttack();
 
@@ -25,6 +25,8 @@ class AttackCone : public Entity {
 		int GetAttackDamage() const { return attackDamage; }
 		int GetRadius() const { return radius; }
 		float GetHalfAngle() const { return halfAngle; }
+		float GetCooldownTime() const { return attackCooldown; }
+		float GetCurrentAttackCooldownTime() const { return currentAttackTime; }
 
 		void ProcessDropQueue(int dropPickupRadius, GameContext& context);
 

@@ -51,7 +51,9 @@ void Sprite::Process(float deltaTime, GameContext& context) {}
 //draw using renderer
 void Sprite::Draw(Renderer* renderer) {
     if (texture) {
-        renderer->DrawTexture(texture, &srcRect, &dstRect, color, alpha, rotation, layer, subLayer);
+        renderer->DrawTexture(texture, &srcRect, &dstRect, color, alpha, rotation, layer, subLayer, false);
+        if(isFlashing)
+            renderer->DrawTexture(texture, &srcRect, &dstRect, {250, 250, 250}, 100, rotation, layer, subLayer, isFlashing);
     }
 }
 
@@ -85,4 +87,8 @@ void Sprite::SetDrawSize(int w, int h) {
 void Sprite::SetDrawLayer(RenderLayer l, int sl) {
     layer = l;
     subLayer = sl;
+}
+
+void Sprite::SetIsFlashing(bool flash) {
+    isFlashing = flash;
 }

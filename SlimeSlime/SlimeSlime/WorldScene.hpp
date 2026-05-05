@@ -36,8 +36,9 @@ private:
     Structure* st;
     Structure* wallH;
     Structure* wallV;
-    Text* text;
-    float explosionFrameTime;
+    Text* woodCount;
+    Text* stoneCount;
+    Text* coinCount;
     int currentStructure;
     bool buildMode;
 };

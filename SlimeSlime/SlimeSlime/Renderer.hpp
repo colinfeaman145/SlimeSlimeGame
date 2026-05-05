@@ -34,6 +34,7 @@ struct RenderCommand {
     RenderLayer layer;
     int subOrder;
     Uint8 r, g, b, a;
+    bool blendMode;
 };
 
 struct BoundingDrawCommand {
@@ -59,10 +60,11 @@ public:
     void EndFrame();
 
     // draw a texture
-    void DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation = 0, RenderLayer layer = RenderLayer::OBJECTS, int subOrder = 0);
-    void AddDebugRect(float x, float y, float w, float h, color c, int a, RenderLayer layer);
-    void AddDebugCircle(float cx, float cy, float radius, color c, int a, RenderLayer layer);
-    void AddDebugCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, color c, int a, RenderLayer layer);
+    void DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation = 0, RenderLayer layer = RenderLayer::OBJECTS, int subOrder = 0, bool bm = false);
+    void AddDrawRect(float x, float y, float w, float h, color c, int a, RenderLayer layer);
+    void AddDrawCircle(float cx, float cy, float radius, color c, int a, RenderLayer layer);
+    void AddDrawCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, color c, int a, RenderLayer layer);
+    void AddFilledRect(float x, float y, float w, float h, color c, int a, RenderLayer layer);
 
     SDL_Renderer* GetSDLRenderer() const { return renderer; }
 
@@ -89,6 +91,7 @@ private:
     void DrawBoundingRect(int x, int y, int w, int h);
     void DrawBoundingCircle(int cx, int cy, int radius);
     void DrawBoundingCone(int cx, int cy, int radius, Vector2 direction, float halfAngle);
+    void DrawFilledRect(int x, int y, int w, int h, color c, int a);
 };
 
 #endif

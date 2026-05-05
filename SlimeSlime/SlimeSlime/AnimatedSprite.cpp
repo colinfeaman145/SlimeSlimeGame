@@ -11,7 +11,7 @@ AnimatedSprite::AnimatedSprite()
     , currentFrame(0)
     , frameDuration(0.1f)
     , timeElapsed(0.0f)
-    , isAnimating(true)
+    , isAnimating(false)
     , isLooping(true)
 {}
 
@@ -78,7 +78,7 @@ void AnimatedSprite::Process(float deltaTime, GameContext& context) {
 }
 
 void AnimatedSprite::Draw(Renderer* renderer) {
-    Sprite::Draw(renderer);
+    if(IsAnimating()) Sprite::Draw(renderer);
 }
 
 void AnimatedSprite::Animate() { isAnimating = true; }

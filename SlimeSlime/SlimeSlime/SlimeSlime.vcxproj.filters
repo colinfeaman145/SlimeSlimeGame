@@ -85,6 +85,9 @@
     <ClCompile Include="GridEnemyManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PercentageBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatedSprite.hpp">
@@ -187,6 +190,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NatureType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PercentageBar.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

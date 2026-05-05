@@ -24,7 +24,7 @@ void Grid::SpawnDrops(ResourceDrop drop, int dropPickupRadius, GameContext& cont
 	int scatter = cellSize * 0.25;
 	uniform_int_distribution<int> xPositionGen(drop.spawnerPosition.x - scatter, (drop.spawnerPosition.x + drop.spawnerSize.x) + scatter);
 	uniform_int_distribution<int> yPositionGen(drop.spawnerPosition.y - scatter, (drop.spawnerPosition.y + drop.spawnerSize.y) + scatter);
-	uniform_real_distribution<float> fallTimeGen(10, 40);
+	uniform_real_distribution<float> fallTimeGen(3, 10);
 
 	int drawSize = context.grid->GetCellSize() * .25;
 	int numDrops = drop.amount;

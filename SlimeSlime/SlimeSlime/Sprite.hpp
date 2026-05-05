@@ -24,6 +24,7 @@ public:
     void SetAlpha(int a);
     void SetDrawSize(int w, int h);
     void SetDrawLayer(RenderLayer l, int sl = 0);
+    void SetIsFlashing(bool flash);
     int GetWidth() const { return dstRect.w; };
     int GetHeight() const { return dstRect.h; };
     Vector2 GetPosition() const { return Vector2(dstRect.x, dstRect.y); }
@@ -36,13 +37,15 @@ protected:
     SDL_Texture* texture;
     color color;
     float alpha;
+    float rotation;
     RenderLayer layer;
     int subLayer;
 
     SDL_Rect srcRect;
     SDL_Rect dstRect;
 
-    float rotation;
+    bool isFlashing;
+
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "Element.hpp"
 #include "Collidable.hpp"
 #include "Attackable.hpp"
+#include "PercentageBar.hpp"
 
 struct GridOccupancy {
 	int minCol, maxCol, minRow, maxRow;
@@ -27,12 +28,16 @@ class Entity : public virtual Element, public virtual Collidable, public virtual
 {
 protected:
 	Sprite* sprite;
+	PercentageBar* healthBar;
 	float radius;//for collision
 	Vector2 position;
 	Vector2 velocity;
 	bool alive;
 	GridOccupancy occupancy;//what gridCells the entity is in(used for collision detection)
 	float movementSpeed;
+
+	//for flash on hit animation
+	float flashDuration;
 
 public:
 	Entity();
@@ -55,6 +60,10 @@ public:
 	void SetMovementSpeed(float speed);
 	void SetPosition(Vector2 pos);
 	void Move(MovementDir m, float deltaTime);
+	void SetHealthBar(PercentageBar* bar);
+	PercentageBar* GetHealthBar();
+
+	void SetFlash(bool flash);
 
 	virtual ResourceType GetDropType() const { return ResourceType::COIN; }
 	virtual int GetDropAmount() const { return ((health / 10) * dropVariance(gen)); }

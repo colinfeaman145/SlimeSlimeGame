@@ -26,12 +26,18 @@ bool Entity::Initialize(Vector2 pos, Vector2 vel, Sprite* spr) {
     if(sprite){
         radius = spr->GetWidth() / 2;
         sprite->SetDrawLayer(RenderLayer::ENEMIES);
-        Vector2 size = sprite->GetDrawSize();
+
         collisionBound = CollisionShape::MakeCircle(radius);
         SetCanCollide(true);
+
+        Vector2 size = sprite->GetDrawSize();
+        healthBar = new PercentageBar(health, maxHealth, size.x * 0.9, size.y * 0.1, {255, 50, 50}, {150, 50, 50});
+        healthBar->SetPosition(position.x, position.y);
+        healthBar->SetOffset((size.x * 0.05), (size.y * 0.8));
     }
     else {
         collisionBound = CollisionShape::MakeCircle(1);//ensure collider data is initialized
+        healthBar = nullptr;
     }
     return true;
 }
@@ -42,12 +48,20 @@ void Entity::Process(float deltaTime, GameContext& context) {
     if (sprite) {
         sprite->SetPosition((int)position.x, (int)position.y);
         sprite->Process(deltaTime, context);
+
+        healthBar->SetPosition(position.x, position.y);
     }
+
+    if (flashDuration > 0) flashDuration -= deltaTime;
+    else SetFlash(false);
 }
 
 void Entity::Draw(Renderer* renderer){
     if (sprite) {
         sprite->Draw(renderer);
+    }
+    if (healthBar && health > 0 && health < maxHealth) {
+        healthBar->Draw(renderer);
     }
     if (DEBUGMODE) {
         if(canCollide)
@@ -74,6 +88,8 @@ void Entity::SetDead() {
 void Entity::Damage(int amount) {
     health -= amount;
     if (health <= 0) SetDead();
+    SetFlash(true);
+    healthBar->SetValues(health, maxHealth);
 }
 
 void Entity::Heal(int amount) {
@@ -128,6 +144,21 @@ void Entity::SetMovementSpeed(float speed) {
 void Entity::SetPosition(Vector2 pos) {
     position = pos;
     if(sprite) sprite->SetPosition(pos);
+    if(healthBar) healthBar->SetPosition(position.x, position.y);
+}
+
+void Entity::SetHealthBar(PercentageBar* bar) {
+    healthBar = bar;
+}
+
+PercentageBar* Entity::GetHealthBar() {
+    return healthBar;
+}
+
+void Entity::SetFlash(bool flash) {
+    if (!sprite) return;
+    sprite->SetIsFlashing(flash);
+    if (flash) flashDuration = 0.5f;
 }
 
 

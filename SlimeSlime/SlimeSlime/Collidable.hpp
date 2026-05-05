@@ -103,14 +103,14 @@ class Collidable {
             Vector2 wp = s.WorldPosition(GetPosition());
             switch (s.type) {
                 case ShapeType::Square:
-                    renderer->AddDebugRect(wp.x, wp.y, s.box.width, s.box.height, c, a, layer);
+                    renderer->AddDrawRect(wp.x, wp.y, s.box.width, s.box.height, c, a, layer);
                     break;
                 case ShapeType::Circle: {
-                    renderer->AddDebugCircle(wp.x, wp.y, s.radius, c, a, layer);
+                    renderer->AddDrawCircle(wp.x, wp.y, s.radius, c, a, layer);
                     break;
                 }
                 case ShapeType::Cone:
-                    renderer->AddDebugCone(wp.x, wp.y, s.radius, s.direction, s.halfAngle, c, a, layer);
+                    renderer->AddDrawCone(wp.x, wp.y, s.radius, s.direction, s.halfAngle, c, a, layer);
                     break;
             }
         }

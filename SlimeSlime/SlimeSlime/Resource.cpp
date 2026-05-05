@@ -5,6 +5,7 @@
 void Resource::Initialize(Vector2 pos, Vector2 vel, Sprite* spr, float ft, ResourceType t) {
 	Entity::Initialize(pos, vel, spr);
 	fallTime = ft;
+	type = t;
 	SetCanCollide(false);
 }
 

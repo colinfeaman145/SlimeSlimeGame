@@ -7,6 +7,7 @@ Structure::Structure(){
     canCollide = false;
     maxDurability = 100;
     durability = maxDurability;
+    buildCost = 3;
 }
 
 Structure::Structure(const Structure& other){
@@ -16,6 +17,7 @@ Structure::Structure(const Structure& other){
     collisionBound = other.collisionBound;
     maxDurability = other.maxDurability;
     durability = other.durability;
+    buildCost = other.buildCost;
 }
 
 Structure* Structure::Clone() const {

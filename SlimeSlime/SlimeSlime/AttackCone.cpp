@@ -11,32 +11,45 @@ AttackCone::AttackCone(int damage, int r, float ha, float ac) {
 }
 
 bool AttackCone::Initialize(Vector2 pos, AnimatedSprite* spr) {
-	int coneRadius = radius;
-	Entity::Initialize(pos, Vector2(), spr);//constructor fucks me, fix it
-	radius = coneRadius;
+	sprite = spr;
+	position = pos;
 
 	CollisionShape cs = CollisionShape::MakeCone(radius, Vector2(1.0, 0.0), halfAngle);
 	SetCollisionBound(cs);
 	canCollide = false;
+
 	swoosh = spr;
-	swoosh->SetPosition(this->position);
+	swoosh->SetPosition(pos);
+	swoosh->SetDrawLayer(RenderLayer::PARTICLE);
+	int arcWidth = (int)(2 * radius * sin(halfAngle));
+	swoosh->SetDrawSize(arcWidth, arcWidth);
+
 	return true;
 }
 
 void AttackCone::Draw(Renderer* renderer) {
+	swoosh->Draw(renderer);
 	Collidable::Draw(renderer, {100, 100, 100}, 100, RenderLayer::ATTACK_CONE);
 }
 
 void AttackCone::Process(float deltaTime, GameContext& context) {
 	if (currentAttackTime > 0)
 		currentAttackTime -= deltaTime;
-	Entity::Process(deltaTime, context);
+	swoosh->Process(deltaTime, context);
 }
 
 void AttackCone::SetTargetPosition(Vector2 target) {
-	Vector2 dir = target - position;
-	float angle = atan2(dir.y, dir.x);
-	collisionBound.SetConeRotation(angle);
+    Vector2 dir = target - position;
+    float angle = atan2(dir.y, dir.x);
+    collisionBound.SetConeRotation(angle);
+
+	//place swoosh
+	float offsetDist = radius - swoosh->GetDrawSize().y * 0.25;//.5 = 50% distance of drawSize away from user(lower = farther)
+	Vector2 offset = Vector2(cos(angle) * offsetDist, sin(angle) * offsetDist);
+
+    Vector2 halfSize = swoosh->GetDrawSize() * 0.5;
+    swoosh->SetPosition(position + offset - halfSize);
+    swoosh->SetRotation(angle * (180.0 / PI) + 75);
 }
 
 bool AttackCone::CanAttack() {
@@ -47,8 +60,8 @@ bool AttackCone::CanAttack() {
 
 void AttackCone::PlayAttack() {
 	if (!CanAttack()) return;
-	printf("ATTACKNG\n");
 	currentAttackTime = attackCooldown;
+	swoosh->Restart();
 	swoosh->Animate();
 }
 
@@ -62,6 +75,8 @@ void AttackCone::IncreaseRadius(int increaseAmount) {
 
 void AttackCone::IncreaseWidth(float increaseAmount) {
 	halfAngle += increaseAmount;
+	int arcWidth = (int)(2 * radius * sin(halfAngle));
+	swoosh->SetDrawSize(arcWidth, swoosh->GetHeight());
 }
 
 void AttackCone::ProcessDropQueue(int dropPickupRadius, GameContext& context) {

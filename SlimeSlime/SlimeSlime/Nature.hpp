@@ -100,6 +100,12 @@ static Nature* GetRandomTree(GameContext& context) {
 	n->Initialize(sprite, NatureType::TREE, true);
 	n->Collidable::SetCollisionBound(cs);
 	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::TREE));
+
+	//tree health bar apepears differently
+	PercentageBar* healthBar = new PercentageBar(n->GetHealth(), n->GetMaxHealth(), cs.box.width * 1.2, cs.box.height * 0.25, { 255, 50, 50 }, { 150, 50, 50 });
+	healthBar->SetPosition(n->GetPosition().x, n->GetPosition().y);
+	healthBar->SetOffset(cs.offset.x - (cs.box.width * 0.1), (sprite->GetHeight() * 0.9));
+	n->SetHealthBar(healthBar);
 	
 	return n;
 }

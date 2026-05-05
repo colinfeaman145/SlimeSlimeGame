@@ -32,6 +32,7 @@ public:
     void Heal(int amount);
     void SetDurability(int d);
     int GetDurability();
+    int GetBuildCost() const { return buildCost; }
 
     ResourceType GetDropType() const override;
     int GetDropAmount() const override;
@@ -44,6 +45,7 @@ protected:
     int maxDurability;
     int durability;
     bool broken;
+    int buildCost;
 };
 
 #endif

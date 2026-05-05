@@ -19,6 +19,8 @@ void Nature::Process(float deltaTime, GameContext& context) {
 
 void Nature::Damage(int amount) {
 	health -= amount;
+	SetFlash(true);
+	healthBar->SetValues(health, maxHealth);
 	//Break if called in AttackCone CollisionHandler
 }
 

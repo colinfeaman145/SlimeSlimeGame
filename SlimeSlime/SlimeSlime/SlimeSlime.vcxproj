@@ -154,6 +154,7 @@
     <ClCompile Include="Nature.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="PercentageBar.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Resource.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="NatureType.hpp" />
     <ClInclude Include="Particle.hpp" />
     <ClInclude Include="ParticleEmitter.hpp" />
+    <ClInclude Include="PercentageBar.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="Resource.hpp" />

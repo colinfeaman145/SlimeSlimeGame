@@ -15,6 +15,7 @@ using namespace std;
 class Scene {
     protected:
         vector<Element*> elements;
+        vector<Sprite*> UI;
     public:
         Scene() {}
         virtual ~Scene() {}

@@ -18,12 +18,15 @@ class Player : public Entity {
 		void AddCoins(int amount);
 		void RemoveCoins(int amount);
 		bool HasEnoughCoins(int amount);
+		int GetCoins() const { return coins; }
 		void AddWood(int amount);
 		void RemoveWood(int amount);
 		bool HasEnoughWood(int amount);
+		int GetWood() const { return wood; }
 		void AddStone(int amount);
 		void RemoveStone(int amount);
 		bool HasEnoughStone(int amount);
+		int GetStone() const { return stone; }
 
 		void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
 		void HandleResourcePickup(Resource* r, GameContext& context);
@@ -35,6 +38,7 @@ class Player : public Entity {
 		int stone;
 		int itemPullRadius ;
 		int itemPickupRadius;
+		PercentageBar* cooldownBar;
 };
 
 #endif
