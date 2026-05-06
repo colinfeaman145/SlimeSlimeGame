@@ -93,7 +93,21 @@ class Collidable {
         virtual inline void SetCollisionBound(CollisionShape cs) { collisionBound = cs; }
         virtual bool CanCollide() const { return canCollide; }
         virtual inline void SetCanCollide(bool collide) { canCollide = collide; }
-        virtual Vector2 GetPosition() = 0;
+        virtual Vector2 GetPosition() const = 0;
+        virtual Vector2 GetCenter() const {
+            Vector2 wp = collisionBound.WorldPosition(GetPosition());
+            switch (collisionBound.type) {
+            case ShapeType::Circle:
+            case ShapeType::Cone:
+                return wp;
+            case ShapeType::Square:
+            default:
+                return {
+                    wp.x + (collisionBound.box.Width() * 0.5f),
+                    wp.y + (collisionBound.box.Height() * 0.5f)
+                };
+            }
+        }
         virtual void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) = 0;
         virtual ~Collidable() = default;
 

@@ -10,6 +10,7 @@
 #include "GridCoord.hpp"
 #include "GameContext.hpp"
 #include "NatureType.hpp"
+#include "FlowField.hpp"
 
 class Grid : public Element {
 public:
@@ -23,8 +24,8 @@ public:
     int GetGridWidth() const { return gridWidth; }
     int GetGridHeight() const { return gridHeight; }
 
-    GridCell* GetCell(GridCoord coord);
-    GridCell* GetCell(int col, int row);
+    GridCell* GetCell(GridCoord coord) const;
+    GridCell* GetCell(int col, int row) const;
     bool IsValidCoord(GridCoord coord) const;
     GridCoord WorldToGrid(Vector2 worldPos) const;
     Vector2 GridToWorld(GridCoord coord) const; //returns top-left of cell
@@ -38,6 +39,12 @@ public:
     void UpdateOccupancy(T* entity, void (GridCell::*addFunc)(T*), void (GridCell::*removeFunc)(T*));
     bool ResolveCollisions(Entity* entity, GameContext& context);
 
+    //pathfinding
+    Vector2 GetFlowVector(GridCoord from, GridCoord target);
+    void InvalidateAllFlowFields();
+    Structure* GetWallBetween(GridCoord from, GridCoord to) const;
+    void DebugDumpFlowField(GridCoord target, int centerCol, int centerRow, int radius);
+
     //Enemies
     void AddEnemy(Enemy* enemy);
     void RemoveEnemy(Enemy* enemy);
@@ -49,9 +56,9 @@ public:
     bool RemoveStructure(GridCoord coord);
 
     //Walls
-    bool CanPlaceWall(GridCoord coord, EdgeDirection dir);
-    bool PlaceWall(GridCoord coord, EdgeDirection dir, Structure* w);
-    bool RemoveWall(GridCoord coord, EdgeDirection dir);
+    bool CanPlaceWall(GridCoord coord, WallDirection dir);
+    bool PlaceWall(GridCoord coord, WallDirection dir, Structure* w);
+    bool RemoveWall(GridCoord coord, WallDirection dir);
 
     //Nature
     void PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell, GameContext& context);
@@ -64,6 +71,12 @@ public:
     void SpawnDrops(ResourceDrop drop, int dropPickupRadius, GameContext& context);
     void UpdateDropOccupancy(Resource* drop);
 
+    //Atlas
+    GridCoord FindAtlas();
+    Structure* GetAtlas();
+    void SetAtlas(Structure* a);
+    void MoveAtlas();
+
 private:
 
     void CondenseToGold(ResourceDrop drop, int dropPickupRadius, GameContext& context);
@@ -73,7 +86,20 @@ private:
     int gridHeight;
 
     GridCell*** cells;//2d array of pointers
+
+    //pathfinding
+    float GetEdgeCost(GridCoord from, GridCoord to, int dirIndex) const;
+
+    void ComputeFlowField(GridCoord target);
+    void RunDijkstra(GridCoord target, FlowField& field);
+    void SmoothFlowField(FlowField& field);
+
+    Structure* atlas;
+
+    unordered_map<GridCoord, FlowField, GridCoordHash, GridCoordEqual> flowFields;
 };
+
+
 
 //OCCUPANCY MANAGEMENT
 template<typename T>

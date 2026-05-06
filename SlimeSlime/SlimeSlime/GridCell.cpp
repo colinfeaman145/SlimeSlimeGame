@@ -48,13 +48,13 @@ void GridCell::Process(float deltaTime, GameContext& context, bool isRendered) {
 }
 
 void GridCell::DrawWalls(Renderer* renderer) {
-    if (walls[(int)EdgeDirection::NORTH])  walls[(int)EdgeDirection::NORTH]->Draw(renderer);
-    if (walls[(int)EdgeDirection::WEST]) walls[(int)EdgeDirection::WEST]->Draw(renderer);
+    if (walls[(int)WallDirection::NORTH])  walls[(int)WallDirection::NORTH]->Draw(renderer);
+    if (walls[(int)WallDirection::WEST]) walls[(int)WallDirection::WEST]->Draw(renderer);
 }
 
 void GridCell::ProcessWalls(float deltaTime, GameContext& context) {
-    if (walls[(int)EdgeDirection::NORTH])  walls[(int)EdgeDirection::NORTH]->Process(deltaTime, context);
-    if (walls[(int)EdgeDirection::WEST]) walls[(int)EdgeDirection::WEST]->Process(deltaTime, context);
+    if (walls[(int)WallDirection::NORTH])  walls[(int)WallDirection::NORTH]->Process(deltaTime, context);
+    if (walls[(int)WallDirection::WEST]) walls[(int)WallDirection::WEST]->Process(deltaTime, context);
 }
 
 void GridCell::DrawNature(Renderer* renderer) {
@@ -111,7 +111,7 @@ vector<Collidable*> GridCell::GetCollidables() const {
         if (walls[i] && !holdingHologramWall[i])
             result.push_back(walls[i]);
 
-    for (Entity* e : enemies)
+    for (Enemy* e : enemies)
         result.push_back(e);
 
     for (Nature* n : nature)
@@ -167,14 +167,14 @@ void GridCell::SetHoldingHologramStruct(bool b) {
 
 //WALLS
 //assuming wall is free(checked in grid)
-bool GridCell::PlaceWall(EdgeDirection dir, Structure* wall) {
+bool GridCell::PlaceWall(WallDirection dir, Structure* wall) {
     int i = (int)dir;
     if (walls[i]) return false;//if wall there, return
     walls[i] = wall;
     return true;
 }
 
-bool GridCell::RemoveWall(EdgeDirection dir) {
+bool GridCell::RemoveWall(WallDirection dir) {
     int i = (int)dir;
     if (!walls[i]) return false;//if no wall, return
     delete walls[i];
@@ -182,17 +182,17 @@ bool GridCell::RemoveWall(EdgeDirection dir) {
     return true;
 }
 
-bool GridCell::HasWall(EdgeDirection dir) const {
+bool GridCell::HasWall(WallDirection dir) const {
     int i = (int)dir;
     if (holdingHologramWall[i]) return false; //available to place real wall
     else return walls[i] != nullptr;
 }
 
-Structure* GridCell::GetWall(EdgeDirection dir) const {
+Structure* GridCell::GetWall(WallDirection dir) const {
     return walls[(int)dir];
 }
 
-void GridCell::SetHoldingHologramWall(bool b, EdgeDirection dir) {
+void GridCell::SetHoldingHologramWall(bool b, WallDirection dir) {
     int i = (int)dir;
     holdingHologramWall[i] = b;
 }

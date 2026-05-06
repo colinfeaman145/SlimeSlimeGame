@@ -53,7 +53,7 @@ void Nature::SetPosition(Vector2 pos) {
 	Entity::sprite->SetDrawLayer(RenderLayer::NATURE, position.y + Entity::sprite->GetHeight());
 }
 
-Vector2 Nature::GetPosition() {
+Vector2 Nature::GetPosition() const {
 	return position;
 }
 

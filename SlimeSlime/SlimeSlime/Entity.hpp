@@ -52,7 +52,7 @@ public:
 	void Heal(int amount);
 	float GetRadius();
 	Vector2 GetFacingDirection();
-	Vector2 GetPosition() override; 
+	Vector2 GetPosition() const override; 
 	Vector2 GetCorner();
 	Vector2& GetVelocity();
 	Sprite* GetSprite();

@@ -70,6 +70,10 @@ bool WorldScene::Initialize(GameContext& context) {
     structSpr->Initialize(structTex, 66, 66, 0, 0, 100, 100, 5, 5);
     st->Initialize(structSpr, false);
 
+    grid->SetAtlas(st);
+    st->SetPosition(Vector2(15500, 10600));
+    elements.push_back(st);
+
     //make walls
     wallH = new Structure();
     wallV = new Structure();
@@ -100,6 +104,13 @@ bool WorldScene::Initialize(GameContext& context) {
     context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
 
     player->SetAttackCone(attackCone);
+
+    //make an enemy
+    enemy = new Enemy();
+    Sprite* enemySprite = playerSprite->Clone();
+    enemySprite->SetColor({ 255, 50, 50 });
+    enemy->Initialize(Vector2(15000, 9990), enemySprite, 15, 5, 1, 10);
+    elements.push_back(enemy);
 
     //UI
     //wood
@@ -159,6 +170,7 @@ void WorldScene::Process(GameContext& context, float deltaTime) {
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
     context.grid->ResolveCollisions(player, context); //collison updates
+    context.grid->ResolveCollisions(enemy, context); //collison updates
     context.renderer->cam->Follow(player->GetPosition());//follow player
 
     //text->SetText(to_string((int)time));
@@ -192,45 +204,6 @@ void WorldScene::LeftMouseClick(GameContext& context) {
         Attack(context);
 }
 
-void WorldScene::PlaceStructure(GameContext& context, bool isHologram) {
-    if (!buildMode) return;
-    Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCoord coord = context.grid->WorldToGrid(vec2);
-
-    if (!isHologram) RemoveHoverEffect(coord, context);
-    if (currentStructure == 1) {
-        context.grid->PlaceWall(coord, EdgeDirection::NORTH, wallH);
-
-        if (!player->HasEnoughWood(wallH->GetBuildCost()) || isHologram) return;//if no have money, die
-        player->RemoveWood(wallH->GetBuildCost());
-    }
-    else if (currentStructure == 2) {
-        context.grid->PlaceWall(coord, EdgeDirection::WEST, wallV);
-
-        if (!player->HasEnoughStone(wallV->GetBuildCost()) || isHologram) return;//if no have money, die
-        player->RemoveStone(wallV->GetBuildCost());
-    }
-    else if (currentStructure == 3) {
-        //grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);
-    }
-}
-
-void WorldScene::RemoveStructure(GameContext& context) {
-    if (!buildMode) return;
-    Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCoord coord = context.grid->WorldToGrid(vec2);
-
-    if (currentStructure == 1) {
-        context.grid->RemoveWall(coord, EdgeDirection::NORTH);
-    }
-    else if (currentStructure == 2) {
-        context.grid->RemoveWall(coord, EdgeDirection::WEST);
-    }
-    else {
-        context.grid->RemoveStructure(coord);
-    }
-}
-
 Entity* WorldScene::GetPlayer() {
     return player;
 }
@@ -248,89 +221,49 @@ void WorldScene::Attack(GameContext& context) {
 }
 
 
-//HOVERING EFFECT
-void WorldScene::UpdateCurrentHoveredCell(GameContext& context) {
-    if (!buildMode) {//if no longer building, remove holograms, reset, end
-        RemoveHoverEffect(currentHoveredCellCoords, context);
-        currentHoveredCellCoords = { -1, -1 };
-        return;
-    }
+//STRUCTURE PLACEMENT
+void WorldScene::PlaceStructure(GameContext& context, bool isHologram) {
+    if (!buildMode) return;
+    Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
+    GridCoord coord = context.grid->WorldToGrid(vec2);
 
-    Vector2 pos = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCell* cell = context.grid->GetCell(context.grid->WorldToGrid(pos));
-    if (!cell) {
-        RemoveHoverEffect(currentHoveredCellCoords, context);
-        currentHoveredCellCoords = { -1, -1 };
-        return;
-    }
+    if (!isHologram) RemoveHoverEffect(coord, context);
+    if (currentStructure == 1) {
+        context.grid->PlaceWall(coord, WallDirection::NORTH, wallH);
 
-    if (currentHoveredCellCoords != context.grid->WorldToGrid(pos)) {//if on a new cell
-        RemoveHoverEffect(currentHoveredCellCoords, context);
-        currentHoveredCellCoords = context.grid->WorldToGrid(pos);
+        if (!player->HasEnoughWood(wallH->GetBuildCost()) || isHologram) return;//if no have money, die
+        player->RemoveWood(wallH->GetBuildCost());
+        context.grid->InvalidateAllFlowFields();
     }
+    else if (currentStructure == 2) {
+        context.grid->PlaceWall(coord, WallDirection::WEST, wallV);
 
-    ApplyHoverEffect(cell, context);
+        if (!player->HasEnoughStone(wallV->GetBuildCost()) || isHologram) return;//if no have money, die
+        player->RemoveStone(wallV->GetBuildCost());
+        context.grid->InvalidateAllFlowFields();
+    }
+    else if (currentStructure == 3) {
+        //grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);
+    }
 }
 
-void WorldScene::ApplyHoverEffect(GridCell* cell, GameContext& context) {
-    //walls
-    if (currentStructure == 1 || currentStructure == 2) {
-        EdgeDirection dir;
-        if(currentStructure == 1)  dir = EdgeDirection::NORTH;
-        else dir = EdgeDirection::WEST;
+//only called by player, never hologram
+void WorldScene::RemoveStructure(GameContext& context) {
+    if (!buildMode) return;
+    Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
+    GridCoord coord = context.grid->WorldToGrid(vec2);
 
-        if (cell->HasWall(dir))//if wall, make red
-            cell->GetWall(dir)->GetSprite()->SetColor({ 255, 100, 100 });
-        else {
-            cell->SetHoldingHologramWall(true, dir);
-            PlaceStructure(context, true);
-            if (!cell->GetWall(dir)) { // placement failed(map edge)
-                cell->SetHoldingHologramWall(false, dir);
-                return;
-            }
-            cell->GetWall(dir)->GetSprite()->SetColor({ 100, 100, 255 });
-            cell->GetWall(dir)->GetSprite()->SetAlpha(100);
-        }
+    if (currentStructure == 1) {
+        context.grid->RemoveWall(coord, WallDirection::NORTH);
     }
-    else {//structures
-        if (cell->HasStructure())//trying to place structure where there already is one
-            cell->GetStructure()->GetSprite()->SetColor({ 255, 100, 100 }); //highlight red
-        else {//no structure
-            cell->SetHoldingHologramStruct(true);
-            PlaceStructure(context, true);
-            cell->GetStructure()->GetSprite()->SetColor({ 100, 100, 255 });
-            cell->GetStructure()->GetSprite()->SetAlpha(100);
-        }
+    else if (currentStructure == 2) {
+        context.grid->RemoveWall(coord, WallDirection::WEST);
     }
-
-    return;
+    else {
+        context.grid->RemoveStructure(coord);
+    }
+    context.grid->InvalidateAllFlowFields();
 }
 
-//remove hologram/red effect
-void WorldScene::RemoveHoverEffect(GridCoord coord, GameContext& context) {
-    GridCell* cell = context.grid->GetCell(currentHoveredCellCoords);
-    if (!cell) return;
-    //walls
-    if (currentStructure == 1 || currentStructure == 2) {
-        EdgeDirection dir;
-        if (currentStructure == 1)  dir = EdgeDirection::NORTH;
-        else dir = EdgeDirection::WEST;
 
-        if (cell->HasWall(dir)) {
-            cell->GetWall(dir)->GetSprite()->SetColor({ 255, 255, 255 });
-        }
-        else {
-            cell->SetHoldingHologramWall(false, dir);
-            cell->RemoveWall(dir);
-        }
-    }
-    else {//structures
-        if (cell->HasStructure())//trying to place structure where there already is one
-            cell->GetStructure()->GetSprite()->SetColor({ 255, 255, 255 }); //highlight red
-        else {//no structure
-            cell->SetHoldingHologramStruct(false);
-            cell->RemoveStructure();
-        }
-    }
-    return;
-}
+

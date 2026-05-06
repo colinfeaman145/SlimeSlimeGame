@@ -52,11 +52,11 @@ public:
     void SetHoldingHologramStruct(bool b);
 
     //walls
-    bool PlaceWall(EdgeDirection dir, Structure* wall);
-    bool RemoveWall(EdgeDirection dir);
-    bool HasWall(EdgeDirection dir) const;
-    Structure* GetWall(EdgeDirection dir) const;
-    void SetHoldingHologramWall(bool b, EdgeDirection dir);
+    bool PlaceWall(WallDirection dir, Structure* wall);
+    bool RemoveWall(WallDirection dir);
+    bool HasWall(WallDirection dir) const;
+    Structure* GetWall(WallDirection dir) const;
+    void SetHoldingHologramWall(bool b, WallDirection dir);
 
     //nature
     void SetNaturePosition(Nature* n);

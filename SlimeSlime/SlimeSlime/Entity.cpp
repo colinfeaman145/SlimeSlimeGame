@@ -77,7 +77,7 @@ void Entity::Rotate(float direction) {
     }
 }
 
-bool Entity::IsAlive()const {
+bool Entity::IsAlive() const {
     return alive;
 }
 
@@ -106,7 +106,7 @@ Vector2 Entity::GetFacingDirection() {
     return velocity.Normalized();
 }
 
-Vector2 Entity::GetPosition() {
+Vector2 Entity::GetPosition() const {
     Vector2 center = position;
     center.x += radius;
     center.y += radius;

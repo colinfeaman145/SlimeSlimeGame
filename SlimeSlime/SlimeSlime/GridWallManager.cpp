@@ -1,12 +1,12 @@
 #include "Grid.hpp"
 
-bool Grid::CanPlaceWall(GridCoord coord, EdgeDirection dir) {
+bool Grid::CanPlaceWall(GridCoord coord, WallDirection dir) {
     GridCell* cell = GetCell(coord);
 
     //get neighbor cell
     GridCoord borderCellCoord = coord;
-    if (dir == EdgeDirection::NORTH) borderCellCoord.row--;
-    else if (dir == EdgeDirection::WEST) borderCellCoord.col--;
+    if (dir == WallDirection::NORTH) borderCellCoord.row--;
+    else if (dir == WallDirection::WEST) borderCellCoord.col--;
     else return false;//invalid direciton
 
     GridCell* borderCell = GetCell(borderCellCoord);//nullptr if invalid
@@ -18,7 +18,7 @@ bool Grid::CanPlaceWall(GridCoord coord, EdgeDirection dir) {
     return true;
 }
 
-bool Grid::PlaceWall(GridCoord coord, EdgeDirection dir, Structure* w) {
+bool Grid::PlaceWall(GridCoord coord, WallDirection dir, Structure* w) {
 
     if (!CanPlaceWall(coord, dir)) return false;
 
@@ -31,12 +31,14 @@ bool Grid::PlaceWall(GridCoord coord, EdgeDirection dir, Structure* w) {
     Vector2 wallPos;
 
     switch (dir) {
-    case EdgeDirection::NORTH:
+    case WallDirection::NORTH:
         wall->ChangeSize(cellSize * 1.25, cellSize * 0.25);
+        wall->SetCollisionBound(CollisionShape::MakeAABB(cellSize , cellSize * 0.25, Vector2(cellSize * 0.125, 0)));
         wallPos = Vector2(cellWorld.x - (cellSize * 0.125), cellWorld.y - (cellSize * 0.125));
         break;
-    case EdgeDirection::WEST:
+    case WallDirection::WEST:
         wall->ChangeSize(cellSize * 0.25, cellSize * 1.22);
+        wall->SetCollisionBound(CollisionShape::MakeAABB(cellSize * 0.25, cellSize, Vector2(0, cellSize * 0.125)));
         wallPos = Vector2(cellWorld.x - (cellSize * 0.125), cellWorld.y - (cellSize * 0.125));
         break;
     }
@@ -48,7 +50,7 @@ bool Grid::PlaceWall(GridCoord coord, EdgeDirection dir, Structure* w) {
     return true;
 }
 
-bool Grid::RemoveWall(GridCoord coord, EdgeDirection dir) {
+bool Grid::RemoveWall(GridCoord coord, WallDirection dir) {
     GridCell* cell = GetCell(coord);
     if (!cell || !cell->HasWall(dir)) return false;
 

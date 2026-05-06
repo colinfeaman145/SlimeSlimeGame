@@ -138,15 +138,18 @@
     <ClCompile Include="AttackCone.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Foliage.cpp" />
     <ClCompile Include="FontManager.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="GridAtlasManager.cpp" />
     <ClCompile Include="GridCell.cpp" />
     <ClCompile Include="GridDropsManager.cpp" />
     <ClCompile Include="GridEnemyManager.cpp" />
     <ClCompile Include="GridNatureManager.cpp" />
+    <ClCompile Include="GridPathfinding.cpp" />
     <ClCompile Include="GridStructureManager.cpp" />
     <ClCompile Include="GridWallManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
@@ -163,6 +166,7 @@
     <ClCompile Include="Structure.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="WorldSceneHoverAffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatedSprite.hpp" />
@@ -174,7 +178,9 @@
     <ClInclude Include="Collision.hpp" />
     <ClInclude Include="Element.hpp" />
     <ClInclude Include="Enemy.hpp" />
+    <ClInclude Include="EnemySpawner.hpp" />
     <ClInclude Include="Entity.hpp" />
+    <ClInclude Include="FlowField.hpp" />
     <ClInclude Include="Foliage.hpp" />
     <ClInclude Include="FontManager.hpp" />
     <ClInclude Include="Game.hpp" />

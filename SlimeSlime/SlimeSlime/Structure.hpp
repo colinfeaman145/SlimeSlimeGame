@@ -22,7 +22,7 @@ public:
     void Process(float deltaTime, GameContext& context) override;
 
     void ChangeSize(int w, int h);
-    Vector2 GetPosition() override{ return position; }
+    Vector2 GetPosition() const override{ return position; }
     Sprite* GetSprite() const { return sprite; }
 
     bool IsBroken() const;
@@ -33,6 +33,7 @@ public:
     void SetDurability(int d);
     int GetDurability();
     int GetBuildCost() const { return buildCost; }
+    virtual float GetTraversalCost() const { return 100; }
 
     ResourceType GetDropType() const override;
     int GetDropAmount() const override;

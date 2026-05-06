@@ -94,7 +94,7 @@ void AttackCone::HandleCollision(Collidable* other, Vector2 penetration, GameCon
 	if (Nature* n = dynamic_cast<Nature*>(other)) {//if its nature
 		if (!n->GetSprite()) return;//return if already deleted
 
-		printf("Damage %d, Health %d / %d\n", attackDamage, n->GetHealth(), n->GetMaxHealth());
+		if(DEBUGMODE) printf("Damage %d, Health %d / %d\n", attackDamage, n->GetHealth(), n->GetMaxHealth());
 		n->Nature::Damage(attackDamage);
 		if (n->GetHealth() <= 0) {//if attack broke structure
 			//spawn drops

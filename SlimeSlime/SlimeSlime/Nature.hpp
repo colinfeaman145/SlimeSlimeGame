@@ -13,7 +13,7 @@ public:
 		void Initialize(Sprite* spr, NatureType t, bool canCollide);
 		NatureType GetNatureType() const { return type; }
 		void SetPosition(Vector2 pos);
-		Vector2 GetPosition() override;
+		Vector2 GetPosition() const override;
 		void Draw(Renderer* renderer) override;
 		void Process(float deltaTime, GameContext& context) override;
 

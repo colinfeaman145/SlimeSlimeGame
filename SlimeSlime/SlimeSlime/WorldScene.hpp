@@ -41,6 +41,9 @@ private:
     Text* coinCount;
     int currentStructure;
     bool buildMode;
+
+    //temp
+    Enemy* enemy;
 };
 
 #endif

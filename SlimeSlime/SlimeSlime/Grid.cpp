@@ -119,12 +119,12 @@ bool Grid::IsValidCoord(GridCoord coord) const {
     return coord.col >= 0 && coord.col < gridWidth && coord.row >= 0 && coord.row < gridHeight;
 }
 
-GridCell* Grid::GetCell(GridCoord coord) {
+GridCell* Grid::GetCell(GridCoord coord) const {
     if (!IsValidCoord(coord)) return nullptr;
     return cells[coord.row][coord.col];
 }
 
-GridCell* Grid::GetCell(int col, int row) {
+GridCell* Grid::GetCell(int col, int row) const {
     return GetCell({ col, row });
 }
 
