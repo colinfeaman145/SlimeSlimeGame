@@ -19,6 +19,7 @@ Structure::Structure(const Structure& other){
     health = other.health;
     healthBar = other.healthBar;
     recipe = other.recipe;
+    collideType = other.collideType;
 }
 
 Structure* Structure::Clone() const {

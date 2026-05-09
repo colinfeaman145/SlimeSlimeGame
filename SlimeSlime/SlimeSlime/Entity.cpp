@@ -49,8 +49,8 @@ void Entity::Process(float deltaTime) {
         sprite->SetPosition((int)position.x, (int)position.y);
         sprite->Process(deltaTime);
 
-        healthBar->SetPosition(position.x, position.y);
     }
+    if(healthBar) healthBar->SetPosition(position.x, position.y);
 
     if (flashDuration > 0) flashDuration -= deltaTime;
     else SetFlash(false);

@@ -212,7 +212,7 @@ void GridCell::PlaceNature(Nature* n) {
 }
 
 void GridCell::RemoveNature(Nature* n) {
-    n->SetDead();//if not done alr
+    //n->SetDead();//if not done alr
     auto it = find(nature.begin(), nature.end(), n);
     if (it != nature.end()) {
         *it = nature.back();

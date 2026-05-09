@@ -91,3 +91,14 @@ bool AnimatedSprite::IsAnimating() const { return isAnimating; }
 void AnimatedSprite::SetLooping(bool loop) { isLooping = loop; }
 void AnimatedSprite::SetLeaveOnLastFrame(bool g) { leaveOnLastFrame = g; }
 void AnimatedSprite::SetFrameDuration(float s) { frameDuration = s; }
+
+void AnimatedSprite::SetFrame(int i) {
+
+    currentFrame = i;
+
+    int col = currentFrame % framesPerRow;
+    int row = currentFrame / framesPerRow;
+
+    srcRect.x = srcOffsetX + (col * srcRect.w);
+    srcRect.y = srcOffsetY + (row * srcRect.h);
+}

@@ -25,9 +25,9 @@ void WorldScene::ReadInputs(float deltaTime) {
         else
             ChangeStructure(1);
     }
-    if (context.im->IsKeyPressed("barbed_wire")) {
-        ChangeStructure(3);
-    }
+    //if (context.im->IsKeyPressed("barbed_wire")) {
+    //    ChangeStructure(3);
+    //}
     if (context.im->IsKeyPressed("push_trap")) {
         if (GetCurrentStructureNumber() == 4) {
             pushTrapDirection++;

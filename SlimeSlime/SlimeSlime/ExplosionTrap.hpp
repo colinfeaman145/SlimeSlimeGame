@@ -6,10 +6,13 @@
 
 class ExplosionTrap : public Trap {
 	public:
+		~ExplosionTrap();
 		ExplosionTrap* Clone() const override { return new ExplosionTrap(*this); }
 		void Initialize();
 		void Draw(Renderer* renderer) override;
 		void Process(float deltaTime) override;
+
+		void SetPosition(Vector2 pos) override;
 
 		void ActivateTrapAbility(Enemy* e) override;
 		void IncreaseAttack(float amount) override;

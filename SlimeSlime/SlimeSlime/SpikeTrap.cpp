@@ -10,7 +10,7 @@ void SpikeTrap::Initialize() {
 	s->SetFrameDuration(0.1);
 	s->SetLeaveOnLastFrame(true);
 	s->SetLooping(false);
-	s->Animate();
+	s->SetFrame(15);
 	sprite = s;
 
 	maxHealth = 90;

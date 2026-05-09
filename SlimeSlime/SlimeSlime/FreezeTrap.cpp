@@ -6,11 +6,11 @@ void FreezeTrap::Initialize() {
 
 	AnimatedSprite* s = new AnimatedSprite();
 	SDL_Texture* tex = context.txm->LoadTexture(context.renderer, "../../assets/traps/ice_trap.png");
-	s->Initialize(tex, 243, 243, 0, 0, size, size, 4, 16);
+	s->Initialize(tex, 123, 123, 0, 0, size, size, 4, 16);
 	s->SetFrameDuration(0.07);
 	s->SetLeaveOnLastFrame(true);
 	s->SetLooping(false);
-	s->Animate();
+	s->SetFrame(15);
 	sprite = s;
 
 	maxHealth = 120;
@@ -26,7 +26,7 @@ void FreezeTrap::ActivateTrapAbility(Enemy* e) {
 	//activates every frame while active
 
 	e->Damage(damage);
-	e->SetFrozen(damage);
+	e->SetFrozen(damage * 4);
 }
 
 void FreezeTrap::HandleCollision(Collidable* other, Vector2 penetration) {

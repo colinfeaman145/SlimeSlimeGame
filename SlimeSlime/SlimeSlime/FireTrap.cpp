@@ -10,7 +10,7 @@ void FireTrap::Initialize() {
 	s->SetFrameDuration(0.07);
 	s->SetLeaveOnLastFrame(true);
 	s->SetLooping(false);
-	s->Animate();
+	s->SetFrame(15);
 	sprite = s;
 
 	maxHealth = 130;

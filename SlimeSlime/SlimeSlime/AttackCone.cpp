@@ -98,7 +98,7 @@ void AttackCone::HandleCollision(Collidable* other, Vector2 penetration) {
 	if(calledAttack){//only deal damage when cone calls resolveCollision, not when Enemy does
 		if (other->GetCollidableType() == CollidableType::ENEMY) {//if its an enemy
 			Enemy* e = static_cast<Enemy*>(other);
-			if (DEBUGMODE) printf("Damage %d, Health %d / %d\n", attackDamage, e->GetHealth(), e->GetMaxHealth());
+			//if (DEBUGMODE) printf("Damage %d, Health %d / %d\n", attackDamage, e->GetHealth(), e->GetMaxHealth());
 
 			if (!e->IsAlive()) return;//dont allow hit when dead
 			float dist = Distance(e->GetPosition(), position);

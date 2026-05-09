@@ -56,6 +56,7 @@ class Enemy : public Entity {
 		Vector2 previousPosition;
 		float stuckTime;
 		float frozenTime;
+		bool unfrozen;
 
 		EnemyType type;
 		int damage;

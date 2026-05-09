@@ -59,7 +59,7 @@ public:
 	Sprite* GetSprite();
 	float GetMovementSpeed();
 	void SetMovementSpeed(float speed);
-	void SetPosition(Vector2 pos);
+	virtual void SetPosition(Vector2 pos);
 	void SetVelocity(Vector2 vel);
 	void Move(MovementDir m, float deltaTime);
 	void SetHealthBar(PercentageBar* bar);

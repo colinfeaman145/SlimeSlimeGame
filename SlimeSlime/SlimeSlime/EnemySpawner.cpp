@@ -102,15 +102,15 @@ void EnemySpawner::InitSprites(GameContext& context) {
 
 		EnemyType type = rowToType[row];
 		AnimatedSprite* spr = new AnimatedSprite();
-		spr->SetFrameDuration(0.15);
-		spr->SetLooping(true);
-		spr->SetLeaveOnLastFrame(true);
 
 		int srcX = 0;
 		int srcY = row * frameHeight;
 
 		spr->Initialize(tex, frameWidth, frameHeight, srcX, srcY, 100, 100, 7, 7);
 		spr->SetDrawLayer(RenderLayer::ENEMIES);
+		spr->SetFrameDuration(0.15);
+		spr->SetLooping(true);
+		spr->SetLeaveOnLastFrame(true);
 
 		moving[type] = spr;
 	}
@@ -124,14 +124,15 @@ void EnemySpawner::InitSprites(GameContext& context) {
 
 		EnemyType type = rowToType[row];
 		AnimatedSprite* spr = new AnimatedSprite();
-		spr->SetFrameDuration(0.15);
-		spr->SetLooping(false);
 
 		int srcX = 0;
 		int srcY = row * frameHeight;
 
 		spr->Initialize(tex, frameWidth, frameHeight, srcX, srcY, 100, 100, 14, 14);
 		spr->SetDrawLayer(RenderLayer::ENEMIES);
+		spr->SetFrameDuration(0.15);
+		spr->SetLooping(false);
+		spr->SetLeaveOnLastFrame(true);
 
 		attacking[type] = spr;
 	}
@@ -145,14 +146,15 @@ void EnemySpawner::InitSprites(GameContext& context) {
 
 		EnemyType type = rowToType[row];
 		AnimatedSprite* spr = new AnimatedSprite();
-		spr->SetFrameDuration(0.05);
-		spr->SetLooping(false);
 
 		int srcX = 0;
 		int srcY = row * frameHeight;
 
 		spr->Initialize(tex, frameWidth, frameHeight, srcX, srcY, 100, 100, 13, 13);
 		spr->SetDrawLayer(RenderLayer::ENEMIES);
+		spr->SetFrameDuration(0.05);
+		spr->SetLooping(false);
+		spr->SetLeaveOnLastFrame(true);
 
 		death[type] = spr;
 	}
@@ -188,6 +190,8 @@ void EnemySpawner::Process(float deltaTime) {
 }
 
 void EnemySpawner::SpawnEnemies(GameContext& context) {
+
+	if (enemies.size() > 200) return;
 
 	//get spawn pool
 	float progress = context.gameProgress + 5;

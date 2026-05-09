@@ -6,11 +6,11 @@
 Enemy::Enemy() {}
 
 Enemy::~Enemy() {
-    delete explosion;
     delete moving;
     delete attacking;
     delete death;
-    Entity::~Entity();
+    if (explosion) context.grid->RemoveOther(explosion);
+    delete explosion;
 }
 
 void Enemy::Initialize(Vector2 pos, AnimatedSprite* spr, float retarget, int targetRad, float atlasTarget, float playerTarget) {
@@ -24,6 +24,8 @@ void Enemy::Initialize(Vector2 pos, AnimatedSprite* spr, float retarget, int tar
     collideType = CollidableType::ENEMY;
     previousPosition = pos;
     stuckTime = 0;
+    frozenTime = 0;
+    unfrozen = false;
     framesSinceLastHone = 0;
     movementSpeed = 35;
     explosion = nullptr;
@@ -56,8 +58,10 @@ void Enemy::Process(float deltaTime) {
         context.grid->UpdateEnemyOccupancy(this);
         return;
     }
-    else {
-        moving->Animate();
+    else if(unfrozen == false){//on first frame unfrozen
+        unfrozen = true;
+        velocity = Vector2();
+        Hone();
     }
 
     if (!attacking->IsAnimating() && framesSinceLastHone >= 5) {//if walking
@@ -205,10 +209,18 @@ int Enemy::GetDropAmount() const {
 }
 
 void Enemy::SetTarget(Collidable* c) {
+    if (target) {
+        auto& vec = target->targetedBy;
+        auto it = std::find(vec.begin(), vec.end(), this);
+        if (it != vec.end()) vec.erase(it);
+    }
     target = c;
+    if (target)
+        target->targetedBy.push_back(this);
 }
 
 Collidable* Enemy::FindNewTarget() {
+
 
     uniform_real_distribution<float> targetAtlasGen(0, atlasTargetChance);
     uniform_real_distribution<float> targetPlayerGen(0, playerTargetChance);
@@ -238,7 +250,7 @@ Collidable* Enemy::FindNewTarget() {
 void Enemy::Hone() {
 
     if (currentRetargetTime < 0) {
-        target = FindNewTarget();
+        SetTarget(FindNewTarget());
         currentRetargetTime = retargetCooldown;
     }
     if (!target) return;
@@ -304,6 +316,7 @@ void Enemy::Attack(Attackable* a) {
 void Enemy::TryExplode() {
     uniform_int_distribution<int> explodeChance(1, 15);
     if (explodeChance(gen) == 2) {
+        explosion->SetPosition(GetPosition());
         explosion->Explode();
         SetDead();
     }
@@ -313,7 +326,8 @@ void Enemy::SetFrozen(float duration) {
     velocity = Vector2();
     frozenTime = max(duration, frozenTime);
     sprite = moving;
-    static_cast<AnimatedSprite*>(sprite)->Pause();
+    moving->Pause();
+    unfrozen = false;
 }
 
 void Enemy::HandleCollision(Collidable* other, Vector2 penetration) {

@@ -20,6 +20,7 @@ public:
     void Pause();
     void Restart();
     bool IsAnimating() const;
+    void SetFrame(int i);
 
 private:
     int frameWidth;

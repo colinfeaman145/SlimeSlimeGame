@@ -3,11 +3,12 @@
 
 #include "Entity.hpp"
 
-class Explosion : virtual public Entity {
+class Explosion : public Entity {
 	public:
 		Explosion(int size, int dam);
 		void Process(float deltaTime) override;
 		void Explode();
+		void SetPosition(Vector2 pos) override;
 		bool isActive();
 		float GetDamageScaler(Collidable* c);
 		void Damage(float amount) override;
@@ -21,6 +22,7 @@ class Explosion : virtual public Entity {
 		float damageDelay;
 		float currentTimer;
 		bool canDamage;//?
+		bool damageDealt;
 };
 
 #endif

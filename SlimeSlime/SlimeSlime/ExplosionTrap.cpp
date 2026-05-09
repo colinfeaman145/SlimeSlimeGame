@@ -1,6 +1,11 @@
 #include "ExplosionTrap.hpp"
 #include "Grid.hpp"
 
+ExplosionTrap::~ExplosionTrap() {
+	if (explosion) context.grid->RemoveOther(explosion);
+	delete explosion;
+}
+
 void ExplosionTrap::Initialize() {
 	int size = context.grid->GetCellSize();
 
@@ -10,16 +15,17 @@ void ExplosionTrap::Initialize() {
 	s->SetFrameDuration(0.2);
 	s->SetLeaveOnLastFrame(true);
 	s->SetLooping(false);
-	s->Animate();
+	s->SetFrame(15);
 	sprite = s;
 
 	maxHealth = 300;
 	health = maxHealth;
-	damage = 300;
+	damage = 200;
 	cooldown = 25;
 	activationDelay = 2.0; //roughly 11 frames
 
-	explosion = new Explosion(size * 3, damage);
+	explosion = new Explosion(size * 2.5, damage);
+	explosion->SetPosition(GetCenter());
 
 	Trap::Initialize();
 }
@@ -29,8 +35,13 @@ void ExplosionTrap::Draw(Renderer* renderer) {
 }
 
 void ExplosionTrap::Process(float deltaTime) {
-	Trap::Process(deltaTime);
 	explosion->Process(deltaTime);
+	Trap::Process(deltaTime);
+}
+
+void ExplosionTrap::SetPosition(Vector2 pos) {
+	Trap::SetPosition(pos);
+	explosion->SetPosition(GetCenter());
 }
 
 void ExplosionTrap::IncreaseAttack(float amount) {

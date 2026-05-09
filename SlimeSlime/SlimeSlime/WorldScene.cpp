@@ -73,7 +73,7 @@ bool WorldScene::Initialize() {
     st->Initialize(structSpr, false);
 
     context.grid->SetAtlas(st);
-    st->SetPosition(Vector2(15500, 10600));
+    st->SetPosition(Vector2(7750, 5300));
     elements.push_back(st);
 
     //make walls
@@ -123,7 +123,7 @@ bool WorldScene::Initialize() {
     playerBSprite->SetFrameDuration(0.25);
     playerBSprite->SetLooping(true);
     playerBSprite->SetLeaveOnLastFrame(true);
-    player->Initialize(Vector2(15000, 10000), 100, Vector2(0, 0), playerBSprite);
+    player->Initialize(Vector2(7500, 5000), 100, Vector2(0, 0), playerBSprite);
     player->SetMovementSpeed(300);
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     elements.push_back(player);

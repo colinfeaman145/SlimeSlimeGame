@@ -18,7 +18,7 @@ Game::Game() {
     context.renderer->Initialize("Slime Slime Game", WIDTH, HEIGHT, false);
     context.txm = new TextureManager();
     context.fm = new FontManager();
-    context.grid = new Grid(30000, 20000, 150);
+    context.grid = new Grid(15000, 10000, 150);
     SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
     context.grid->Initialize(grassTex);
     context.am = new AudioManager();

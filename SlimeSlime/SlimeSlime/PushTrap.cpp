@@ -54,13 +54,13 @@ void PushTrap::ActivateTrapAbility(Enemy* e) {
 	int pushScale = 100;
 	switch (direction) {
 		case(PushTrapDirection::NORTH):
-			e->SetVelocity(Vector2(0, -damage * pushScale));
+			e->SetVelocity(Vector2(0, damage * pushScale));
 			break;
 		case(PushTrapDirection::EAST):
 			e->SetVelocity(Vector2(damage * pushScale, 0));
 			break;
 		case(PushTrapDirection::SOUTH):
-			e->SetVelocity(Vector2(0, damage * pushScale));
+			e->SetVelocity(Vector2(0, -damage * pushScale));
 			break;
 		case(PushTrapDirection::WEST):
 			e->SetVelocity(Vector2(-damage * pushScale, 0));

@@ -138,6 +138,7 @@
     <ClCompile Include="AttackCone.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Collidable.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="GridDropsManager.cpp" />
     <ClCompile Include="GridEnemyManager.cpp" />
     <ClCompile Include="GridNatureManager.cpp" />
+    <ClCompile Include="GridOtherManager.cpp" />
     <ClCompile Include="GridPathfinding.cpp" />
     <ClCompile Include="GridStructureManager.cpp" />
     <ClCompile Include="GridWallManager.cpp" />

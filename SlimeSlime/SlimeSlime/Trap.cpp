@@ -25,10 +25,12 @@ void Trap::Draw(Renderer* renderer) {
 }
 
 void Trap::Process(float deltaTime) {
-	currentTimer += deltaTime;
+
+	if (currentTimer < cooldown) currentTimer += deltaTime;//pause timer when ready
 	cooldownBar->SetValues(currentTimer, cooldown);
 
 	if (activated) {
+		currentTimer += deltaTime;
 		//do we reset?
 		if (sprite) {
 			if (!static_cast<AnimatedSprite*>(sprite)->IsAnimating()) {

@@ -77,6 +77,10 @@ public:
     void ChangeItemPickupRadius(int amount);
     int GetItemPickupRadius();
 
+    //Other
+    void AddOther(Entity* e);
+    void RemoveOther(Entity* e);
+
     //Atlas
     GridCoord FindAtlas();
     Structure* GetAtlas();

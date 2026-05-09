@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 #include "ShapeType.hpp"
 
+class Enemy;
 using namespace std;
 
 enum class CollidableType { 
@@ -100,46 +101,20 @@ class Collidable {
         CollidableType collideType;
         bool canCollide; //can you go through this collidable
     public:
+
+        vector<Enemy*> targetedBy;
+        virtual ~Collidable();
         virtual CollisionShape& GetCollisionBound() { return collisionBound; }
         virtual inline void SetCollisionBound(CollisionShape cs) { collisionBound = cs; }
         virtual bool CanCollide() const { return canCollide; }
         virtual inline void SetCanCollide(bool collide) { canCollide = collide; }
         virtual Vector2 GetPosition() const = 0;
         virtual CollidableType GetCollidableType() const { return collideType; }
-        virtual Vector2 GetCenter() const {
-            Vector2 wp = collisionBound.WorldPosition(GetPosition());
-            switch (collisionBound.type) {
-            case ShapeType::Circle:
-            case ShapeType::Cone:
-                return wp;
-            case ShapeType::Square:
-            default:
-                return {
-                    wp.x + (collisionBound.box.Width() * 0.5f),
-                    wp.y + (collisionBound.box.Height() * 0.5f)
-                };
-            }
-        }
+        virtual Vector2 GetCenter() const;
         virtual void HandleCollision(Collidable* other, Vector2 penetration) = 0;
-        virtual ~Collidable() = default;
 
         //debug 
-        virtual void Draw(Renderer* renderer, color c, int a = 255, RenderLayer layer = RenderLayer::DEBUG) {
-            CollisionShape s = GetCollisionBound();
-            Vector2 wp = s.WorldPosition(GetPosition());
-            switch (s.type) {
-                case ShapeType::Square:
-                    renderer->AddDrawRect(wp.x, wp.y, s.box.width, s.box.height, c, a, layer);
-                    break;
-                case ShapeType::Circle: {
-                    renderer->AddDrawCircle(wp.x, wp.y, s.radius, c, a, layer);
-                    break;
-                }
-                case ShapeType::Cone:
-                    renderer->AddDrawCone(wp.x, wp.y, s.radius, s.direction, s.halfAngle, c, a, layer);
-                    break;
-            }
-        }
+        virtual void Draw(Renderer* renderer, color c, int a = 255, RenderLayer layer = RenderLayer::DEBUG);
  };
 
 #endif
