@@ -59,7 +59,7 @@ bool Renderer::Initialize(const string& windowTitle, int width, int height, bool
 }
 
 //actually draws texture to screen
-void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation, RenderLayer layer, int subOrder, bool bm) {
+void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation, RenderLayer layer, int subOrder, bool bm, SDL_RendererFlip f) {
     if (!texture || !renderer) return;
 
     RenderCommand cmd;
@@ -74,6 +74,7 @@ void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* ds
     cmd.b = c.b;
     cmd.a = a;
     cmd.blendMode = bm;
+    cmd.flip = f;
     renderQueue.push_back(cmd);
 }
 
@@ -119,7 +120,7 @@ void Renderer::DrawSingleRenderCommand(const RenderCommand& cmd) {
     SDL_SetTextureAlphaMod(cmd.texture, cmd.a);
     SDL_Rect v = cmd.layer == RenderLayer::UI ? cmd.dstRect : cam->GetScreenRect(&cmd.dstRect);//UI elements are stagnant
     SDL_Point center = { v.w / 2, v.h / 2 };
-    SDL_RenderCopyEx(renderer, cmd.texture, &cmd.srcRect, &v, cmd.rotation, &center, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, cmd.texture, &cmd.srcRect, &v, cmd.rotation, &center, cmd.flip);
     SDL_SetTextureColorMod(cmd.texture, 255, 255, 255);
     SDL_SetTextureAlphaMod(cmd.texture, 255);
 }

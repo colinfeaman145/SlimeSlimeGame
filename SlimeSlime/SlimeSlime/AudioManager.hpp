@@ -3,6 +3,9 @@
 #include <fmod.hpp>
 #include <map>
 #include <string>
+#include "Vector2.hpp"
+
+#define SOUND_COOLDOWN 0.25
 
 using namespace FMOD;
 using namespace std;
@@ -10,11 +13,11 @@ class AudioManager {
 public:
     AudioManager() = default;
     bool Initialize(const FMOD_VECTOR& listenerPos);
-    void Update();
+    void Process(Vector2 pos, float deltaTime);
     void Cleanup();
 
     bool LoadSound(const string& filepath, const string& soundName);
-    bool PlaySound(const string& soundName, const string& groupName, const FMOD_VECTOR& pos, const FMOD_VECTOR& vel);
+    bool PlaySound(const string& soundName, const string& groupName, const FMOD_VECTOR& pos, const FMOD_VECTOR& vel, Vector2 pitchVariance);
         
     //group control
     bool AddGroup(const string& name);
@@ -29,6 +32,7 @@ public:
 private:
     System* system = nullptr;
     map<string, Sound*> sounds;
+    map<string, float> soundCooldown;
     map<string, ChannelGroup*> groups;
     FMOD_VECTOR listenerPos;
 };

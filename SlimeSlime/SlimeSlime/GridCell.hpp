@@ -28,13 +28,13 @@ public:
     GridCoord GetCoords() const { return coords; }
     Vector2 GetPosition() const { return position; }
     void Draw(Renderer* renderer);
-    void Process(float deltaTime, GameContext& context, bool isRendered);
+    void Process(float deltaTime, bool isRendered);
     void DrawWalls(Renderer* renderer);
-    void ProcessWalls(float deltaTime, GameContext& context);
+    void ProcessWalls(float deltaTime);
     void DrawNature(Renderer* renderer);
-    void ProcessNature(float deltaTime, GameContext& context);
+    void ProcessNature(float deltaTime);
     void DrawDrops(Renderer* renderer);
-    void ProcessDrops(float deltaTime, GameContext& context);
+    void ProcessDrops(float deltaTime);
 
     vector<Collidable*> GetCollidables() const;
 

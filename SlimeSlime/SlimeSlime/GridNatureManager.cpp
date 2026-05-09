@@ -2,7 +2,7 @@
 #include "Nature.hpp"
 #include "Foliage.hpp"
 
-void Grid::PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell, GameContext& context) {
+void Grid::PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell) {
     uniform_int_distribution<int> changeType(1, 10);
 
     if (spreadChance(gen) != 3) return;//only spread when chance hits
@@ -11,50 +11,41 @@ void Grid::PlaceNature(uniform_int_distribution<int> spreadChance, NatureType ty
     //Are we changing nature type?
     switch (changeType(gen)) {
     case(1)://yes 
-        nature = GetRandomTree(context);
+        nature = GetRandomTree();
         break;
     case(2):
-        nature = GetRandomRock(context);
+        nature = GetRandomRock();
         break;
     case(3):
-        nature = GetRandomBush(context);
+        nature = GetRandomBush();
         break;
     case(4):
-        nature = GetRandomStump(context);
+        nature = GetRandomStump();
         break;
     default://no
         switch (type) {//fuck everything, nested switch
         case(NatureType::TREE):
-            nature = GetRandomTree(context);
+            nature = GetRandomTree();
             break;
         case(NatureType::ROCK):
-            nature = GetRandomRock(context);
+            nature = GetRandomRock();
             break;
         case(NatureType::BUSH):
-            nature = GetRandomBush(context);
+            nature = GetRandomBush();
             break;
         case(NatureType::STUMP):
-            nature = GetRandomStump(context);
+            nature = GetRandomStump();
             break;
         case(NatureType::FOLIAGE):
-            nature = GetRandomFoliage(context);
+            nature = GetRandomFoliage();
             break;
         }
     };
     cell->SetNaturePosition(nature);//set so World Position is accurate
 
-    ////ensure placed in cell where bounding box is(holy fuck this took so long to discover I needed this)
-    //Vector2 csPos = nature->GetCollisionBound().WorldPosition(nature->GetPosition());
-    //GridCoord baseCoord = WorldToGrid(csPos);
-    //GridCell* baseCell = GetCell(baseCoord);
-
-    //if (baseCell && baseCell != cell) {
-    //    baseCell->SetNaturePosition(nature);//adjust location
-    //}
-
     //place in cells it occupies
     UpdateOccupancy(nature, &GridCell::PlaceNature, &GridCell::RemoveNature);
-    if (ResolveCollisions(nature, context)) {// overlaps something, don't place it
+    if (HasCollision(nature)) {// overlaps something, don't place it
         RemoveNature(nature);
         return;
     }
@@ -62,21 +53,21 @@ void Grid::PlaceNature(uniform_int_distribution<int> spreadChance, NatureType ty
     //recurse
     vector<GridCell*> neighbors = GetNeighbourCells(cell->GetCoords(), 1);
     for (GridCell* c : neighbors) {
-        PlaceNature(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 3), nature->GetNatureType(), c, context);
+        PlaceNature(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 3), nature->GetNatureType(), c);
     }
 }
 
-void Grid::PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell, GameContext& context) {
+void Grid::PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell) {
 
     if (spreadChance(gen) != 3) return;//only spread when chance hits
 
     Nature* nature = nullptr;
     for (int i = 0; i < 3; i++) {
-        nature = GetRandomFoliage(context);
+        nature = GetRandomFoliage();
 
         cell->SetNaturePosition(nature);
         UpdateOccupancy(nature, &GridCell::PlaceNature, &GridCell::RemoveNature);
-        if (ResolveCollisions(nature, context)) {// overlaps something, don't place it
+        if (HasCollision(nature)) {// overlaps something, don't place it
             RemoveNature(nature);
             return;
         }
@@ -85,7 +76,7 @@ void Grid::PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* ce
     //recurse
     vector<GridCell*> neighbors = GetNeighbourCells(cell->GetCoords(), 1);
     for (GridCell* c : neighbors) {
-        PlaceFoliage(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 1), c, context);
+        PlaceFoliage(uniform_int_distribution<int>(spreadChance.a(), spreadChance.b() + 1), c);
     }
 }
 
@@ -97,4 +88,21 @@ void Grid::RemoveNature(Nature* n) {
         cell->RemoveNature(n);
 
     delete n;
+}
+
+NatureType Grid::GetRandomNatureType() {
+    uniform_int_distribution<int> natureTypeGen(1, 20);//30% tree 5% stump 40% rock 15% bush
+
+    int nt = natureTypeGen(gen);
+    NatureType type;
+    if (1 <= nt && nt <= 6)
+        type = NatureType::TREE;
+    else if (7 <= nt && nt <= 7)
+        type = NatureType::STUMP;
+    else if (8 <= nt && nt <= 15)
+        type = NatureType::ROCK;
+    else if (16 <= nt && nt <= 20)
+        type = NatureType::BUSH;
+
+    return type;
 }

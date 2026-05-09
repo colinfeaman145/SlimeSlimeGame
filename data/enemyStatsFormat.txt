@@ -1,0 +1,11 @@
+Color
+damageMin 	damageMax
+healthMin 	healthMax
+sizeMin 	sizeMax			*scaler relative to grid cell size
+speedMin 	speedMax
+attackSpeedMin 	attackSpeedMax
+
+
+NOTE: 	No commas, just numbers
+	No Pink(random) stats, takes stats of another
+	

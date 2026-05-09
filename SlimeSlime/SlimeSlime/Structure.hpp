@@ -7,10 +7,12 @@
 #include "Renderer.hpp"
 #include "Element.hpp"
 #include "Attackable.hpp"
+#include "PercentageBar.hpp"
+#include "Resource.hpp"
 
 class Grid;
 
-class Structure : public virtual Element, public virtual Collidable, public virtual Attackable {
+class Structure : public virtual Element, public Collidable, public Attackable {
 public:
     Structure();
     Structure(const Structure& other);
@@ -18,8 +20,8 @@ public:
     virtual ~Structure();
 
     bool Initialize(Sprite* spr, bool canCollide);
-    void Draw(Renderer* renderer) override;
-    void Process(float deltaTime, GameContext& context) override;
+    virtual void Draw(Renderer* renderer) override;
+    virtual void Process(float deltaTime) override;
 
     void ChangeSize(int w, int h);
     Vector2 GetPosition() const override{ return position; }
@@ -27,26 +29,26 @@ public:
 
     bool IsBroken() const;
     virtual void SetBroken(bool b);
-    void SetPosition(Vector2 pos);
-    virtual void Damage(int amount);
+    virtual void SetPosition(Vector2 pos);
+    void Damage(float amount) override;
     void Heal(int amount);
     void SetDurability(int d);
     int GetDurability();
-    int GetBuildCost() const { return buildCost; }
+    auto GetRecipe() const { return recipe; }
+    void SetRecipe(unordered_map<ResourceType, int> r);
     virtual float GetTraversalCost() const { return 100; }
 
     ResourceType GetDropType() const override;
     int GetDropAmount() const override;
 
-    void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
+    void HandleCollision(Collidable* other, Vector2 penetration) override;
 
 protected:
     Sprite* sprite;
     Vector2 position;
-    int maxDurability;
-    int durability;
     bool broken;
-    int buildCost;
-};
+    unordered_map<ResourceType, int> recipe;
+    PercentageBar* healthBar;
+};  
 
 #endif

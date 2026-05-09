@@ -34,7 +34,7 @@ void ParticleEmitter::Initialize(Vector2 vMin, Vector2 vMax, float rMin, float r
 	maxAge = uniform_real_distribution<float>(ageMin, ageMax);
 }
 
-void ParticleEmitter::Process(float deltaTime, GameContext& context) {
+void ParticleEmitter::Process(float deltaTime) {
 	if (isSpawning) {
 		emitTimer += deltaTime;
 
@@ -47,7 +47,7 @@ void ParticleEmitter::Process(float deltaTime, GameContext& context) {
 	for (int i = particles.size() - 1; i >= 0; i--) {
 		Particle* p = particles[i];
 
-		p->Process(deltaTime, context); //update
+		p->Process(deltaTime); //update
 
 		if (p->age >= p->maxAge) { //kill if old
 			particles.erase(particles.begin() + i);

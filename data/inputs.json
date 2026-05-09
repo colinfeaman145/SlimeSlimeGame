@@ -6,7 +6,12 @@
     "change_scene": ["tab"],
     "pause":        ["escape"],
     "build_mode":   ["b"],
-    "vertical_wall": ["1"],
-    "horizontal_wall": ["2"],
-    "trap":         ["3"]
+    "change_material":   ["n"],
+    "wall":         ["1"],
+    "barbed_wire":  ["2"],
+    "push_trap":    ["3"],
+    "spike_trap":   ["4"],
+    "fire_trap":    ["5"],
+    "ice_trap":     ["6"],
+    "explosion_trap":    ["7"]
 }

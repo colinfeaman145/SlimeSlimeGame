@@ -43,7 +43,7 @@ public:
 	void Initialize();
 	void Initialize(Vector2 vMin, Vector2 vMax, float rMin, float rMax, float aMin, float aMax, float adMin, float adMax, float ageMin, float ageMax);
 	void Draw(Renderer* renderer) override;
-	void Process(float deltaTime, GameContext& context) override;
+	void Process(float deltaTime) override;
 	void SetPosition(Vector2 pos);
 	void StartSpawning(float er);
 	void StopSpawning();

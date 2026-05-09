@@ -7,10 +7,11 @@ void Resource::Initialize(Vector2 pos, Vector2 vel, Sprite* spr, float ft, Resou
 	fallTime = ft;
 	type = t;
 	SetCanCollide(false);
+	collideType = CollidableType::RESOURCE;
 }
 
-void Resource::Process(float deltaTime, GameContext& context) {
-	Entity::Process(deltaTime, context);
+void Resource::Process(float deltaTime) {
+	Entity::Process(deltaTime);
 
 	fallTime -= deltaTime;
 	if (fallTime > 0) {
@@ -18,8 +19,8 @@ void Resource::Process(float deltaTime, GameContext& context) {
 	}
 }
 
-void Resource::HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) {
-	if (Player* n = dynamic_cast<Player*>(other)) {//if colliding with player
+void Resource::HandleCollision(Collidable* other, Vector2 penetration) {
+	if (other->GetCollidableType() == CollidableType::PLAYER) {//if colliding with player
 		//pull towards player
 		position.x -= penetration.x;
 		position.y -= penetration.y;

@@ -15,7 +15,6 @@ class Grid;
 //class FontManager;
 //class AudioManager;
 
-static mt19937 gen(random_device{}());
 
 struct GameContext {
     Renderer* renderer;
@@ -24,6 +23,10 @@ struct GameContext {
     AudioManager* am;
     InputManager* im;
     Grid* grid;
+    float gameProgress;
 };
+
+inline GameContext context;
+inline mt19937 gen(random_device{}());
 
 #endif

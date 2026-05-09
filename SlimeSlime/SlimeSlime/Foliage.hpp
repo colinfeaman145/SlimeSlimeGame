@@ -8,11 +8,11 @@
 
 class Foliage : public Nature {
 
-	void HandleCollision(Collidable* other, Vector2 penetration, GameContext& conext) override;
+	void HandleCollision(Collidable* other, Vector2 penetration) override;
 
 };
 
-static Foliage* GetRandomFoliage(GameContext& context) {
+static Foliage* GetRandomFoliage() {
 	int i = foliageSpriteGen(gen);
 
 	int cellSize = context.grid->GetCellSize();

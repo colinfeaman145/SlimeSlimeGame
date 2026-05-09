@@ -16,9 +16,9 @@ class Grid : public Element {
 public:
     Grid(int worldWidth, int worldHeight, int cellSize);
     ~Grid();
-    bool Initialize(SDL_Texture* cellSprite, GameContext& context);
+    bool Initialize(SDL_Texture* cellSprite);
     void Draw(Renderer* renderer) override;
-    void Process(float deltaTime, GameContext& context) override;
+    void Process(float deltaTime) override;
 
     int GetCellSize() const { return cellSize; }
     int GetGridWidth() const { return gridWidth; }
@@ -37,10 +37,12 @@ public:
 
     template<typename T>
     void UpdateOccupancy(T* entity, void (GridCell::*addFunc)(T*), void (GridCell::*removeFunc)(T*));
-    bool ResolveCollisions(Entity* entity, GameContext& context);
+    bool ResolveCollisions(Entity* entity);
+    bool HasCollision(Entity* entity);
 
     //pathfinding
     Vector2 GetFlowVector(GridCoord from, GridCoord target);
+    void InvalidateFlowFieldsNear(GridCoord changedAt, int radius);
     void InvalidateAllFlowFields();
     Structure* GetWallBetween(GridCoord from, GridCoord to) const;
     void DebugDumpFlowField(GridCoord target, int centerCol, int centerRow, int radius);
@@ -54,6 +56,7 @@ public:
     bool CanPlaceStructure(GridCoord coord) const;
     bool PlaceStructure(Structure* structure, GridCoord coord);
     bool RemoveStructure(GridCoord coord);
+    bool RemoveStructure(Structure* structure);
 
     //Walls
     bool CanPlaceWall(GridCoord coord, WallDirection dir);
@@ -61,15 +64,18 @@ public:
     bool RemoveWall(GridCoord coord, WallDirection dir);
 
     //Nature
-    void PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell, GameContext& context);
-    void PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell, GameContext& context);
+    void PlaceNature(uniform_int_distribution<int> spreadChance, NatureType type, GridCell* cell);
+    void PlaceFoliage(uniform_int_distribution<int> spreadChance, GridCell* cell);
     void RemoveNature(Nature* n);
+    NatureType GetRandomNatureType();
 
     //Drops
     void AddDrop(Resource* drop);
     void RemoveDrop(Resource* drop);
-    void SpawnDrops(ResourceDrop drop, int dropPickupRadius, GameContext& context);
+    void SpawnDrops(ResourceDrop drop);
     void UpdateDropOccupancy(Resource* drop);
+    void ChangeItemPickupRadius(int amount);
+    int GetItemPickupRadius();
 
     //Atlas
     GridCoord FindAtlas();
@@ -79,7 +85,8 @@ public:
 
 private:
 
-    void CondenseToGold(ResourceDrop drop, int dropPickupRadius, GameContext& context);
+    int itemPickupRadius;
+    void CondenseToGold(ResourceDrop drop);
 
     int cellSize;
     int gridWidth; //in cells
@@ -90,8 +97,8 @@ private:
     //pathfinding
     float GetEdgeCost(GridCoord from, GridCoord to, int dirIndex) const;
 
-    void ComputeFlowField(GridCoord target);
-    void RunDijkstra(GridCoord target, FlowField& field);
+    void ComputeFlowField(GridCoord target, int radius);
+    void RunDijkstra(GridCoord target, FlowField& field, int radius);
     void SmoothFlowField(FlowField& field);
 
     Structure* atlas;

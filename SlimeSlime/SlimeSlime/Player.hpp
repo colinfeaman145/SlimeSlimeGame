@@ -9,9 +9,10 @@ class Resource;
 class Player : public Entity {
 	public:
 
-		void Initialize(Vector2 pos, int pullRadius = 100, Vector2 vel = Vector2(0, 0), Sprite* spr = nullptr);
+		void Initialize(Vector2 pos, int pullRadius = 100, Vector2 vel = Vector2(0, 0), AnimatedSprite* spr = nullptr);
+		void SetSprites(AnimatedSprite* f, AnimatedSprite* b);
 		void Draw(Renderer* renderer) override;
-		void Process(float deltaTime, GameContext& context) override;
+		void Process(float deltaTime) override;
 
 		void SetAttackCone(AttackCone* ac);
 		AttackCone* GetAttackCone();
@@ -27,16 +28,17 @@ class Player : public Entity {
 		void RemoveStone(int amount);
 		bool HasEnoughStone(int amount);
 		int GetStone() const { return stone; }
+		bool CanMakeRecipe(unordered_map<ResourceType, int> recipe);
+		void RemoveRecipeCost(unordered_map<ResourceType, int> recipe);
 
-		void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
-		void HandleResourcePickup(Resource* r, GameContext& context);
+		void HandleCollision(Collidable* other, Vector2 penetration) override;
+		void HandleResourcePickup(Resource* r);
 
 	private:
 		AttackCone* attackCone;
 		int coins;
 		int wood;
 		int stone;
-		int itemPullRadius ;
 		int itemPickupRadius;
 		PercentageBar* cooldownBar;
 };

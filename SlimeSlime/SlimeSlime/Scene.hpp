@@ -20,9 +20,11 @@ class Scene {
         Scene() {}
         virtual ~Scene() {}
 
-        virtual bool Initialize(GameContext& context) = 0; //makes and saves sprites and entities
-        virtual void Process(GameContext& context, float deltaTime) = 0;
+        virtual bool Initialize() = 0; //makes and saves sprites and entities
+        virtual void Process(float deltaTime) = 0;
         virtual void Draw(Renderer* renderer) = 0; 
+
+        virtual void ReadInputs(float deltaTime) = 0;
 };
 
 #endif

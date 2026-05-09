@@ -18,6 +18,7 @@ Sprite::Sprite(const Sprite& other) {
     rotation = other.rotation;
     layer = other.layer;
     subLayer = other.subLayer;
+    flip = other.flip;
 }
 
 Sprite* Sprite::Clone() const {
@@ -42,18 +43,22 @@ bool Sprite::Initialize(SDL_Texture* tex, int srcWidth, int srcHeight, int srcX,
 
     layer = l;
     subLayer = sl;
+    flip = SDL_FLIP_NONE;
 
     return true;
 }
 
-void Sprite::Process(float deltaTime, GameContext& context) {}
+void Sprite::Process(float deltaTime) {}
 
 //draw using renderer
 void Sprite::Draw(Renderer* renderer) {
     if (texture) {
-        renderer->DrawTexture(texture, &srcRect, &dstRect, color, alpha, rotation, layer, subLayer, false);
+        //if(layer == RenderLayer::ENEMIES)
+        //    printf("Sprite::Draw pos=(%d,%d) size=(%d,%d) layer=%d tex=%p\n",
+        //        dstRect.x, dstRect.y, dstRect.w, dstRect.h, (int)layer, texture);
+        renderer->DrawTexture(texture, &srcRect, &dstRect, color, alpha, rotation, layer, subLayer, false, flip);
         if(isFlashing)
-            renderer->DrawTexture(texture, &srcRect, &dstRect, {250, 250, 250}, 100, rotation, layer, subLayer, isFlashing);
+            renderer->DrawTexture(texture, &srcRect, &dstRect, {250, 250, 250}, 100, rotation, layer, subLayer, isFlashing, flip);
     }
 }
 
@@ -91,4 +96,8 @@ void Sprite::SetDrawLayer(RenderLayer l, int sl) {
 
 void Sprite::SetIsFlashing(bool flash) {
     isFlashing = flash;
+}
+
+void Sprite::SetFlip(bool flipH) {
+    flip = flipH ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
 }

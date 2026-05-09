@@ -31,7 +31,7 @@ bool Entity::Initialize(Vector2 pos, Vector2 vel, Sprite* spr) {
         SetCanCollide(true);
 
         Vector2 size = sprite->GetDrawSize();
-        healthBar = new PercentageBar(health, maxHealth, size.x * 0.9, size.y * 0.1, {255, 50, 50}, {150, 50, 50});
+        healthBar = new PercentageBar(health, maxHealth, size.x * 0.9, size.y * 0.1, {255, 50, 50}, {0, 0, 0});
         healthBar->SetPosition(position.x, position.y);
         healthBar->SetOffset((size.x * 0.05), (size.y * 0.8));
     }
@@ -42,12 +42,12 @@ bool Entity::Initialize(Vector2 pos, Vector2 vel, Sprite* spr) {
     return true;
 }
 
-void Entity::Process(float deltaTime, GameContext& context) {
+void Entity::Process(float deltaTime) {
     position = position + (velocity * deltaTime);
 
     if (sprite) {
         sprite->SetPosition((int)position.x, (int)position.y);
-        sprite->Process(deltaTime, context);
+        sprite->Process(deltaTime);
 
         healthBar->SetPosition(position.x, position.y);
     }
@@ -85,11 +85,11 @@ void Entity::SetDead() {
     alive = false;
 }
 
-void Entity::Damage(int amount) {
+void Entity::Damage(float amount) {
     health -= amount;
     if (health <= 0) SetDead();
     SetFlash(true);
-    healthBar->SetValues(health, maxHealth);
+    if(healthBar) healthBar->SetValues(health, maxHealth);
 }
 
 void Entity::Heal(int amount) {
@@ -147,6 +147,10 @@ void Entity::SetPosition(Vector2 pos) {
     if(healthBar) healthBar->SetPosition(position.x, position.y);
 }
 
+void Entity::SetVelocity(Vector2 vel) {
+    velocity = vel;
+}
+
 void Entity::SetHealthBar(PercentageBar* bar) {
     healthBar = bar;
 }
@@ -179,9 +183,13 @@ void Entity::Move(MovementDir m, float deltaTime) {
         default:
             break;
     }
+    moving = true;
 }
 
-void Entity::HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) {
+void Entity::HandleCollision(Collidable* other, Vector2 penetration) {
+    if (other->GetCollidableType() == CollidableType::ENEMY) {
+        return;//entitys dont collide with each other
+    }
     if (other->CanCollide()) {
         position = GetCorner() + penetration;
     }

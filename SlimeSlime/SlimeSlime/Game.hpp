@@ -20,11 +20,10 @@ public:
     void Cleanup();
 
 private:
-    void Process(float deltaTime, GameContext& context);
+    void Process(float deltaTime);
     void Draw();
 
 private:
-    GameContext context;
     vector<Scene*> scenes;
     int currentScene;
     bool running;

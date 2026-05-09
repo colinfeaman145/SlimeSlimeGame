@@ -27,7 +27,8 @@ AnimatedSprite::AnimatedSprite(const AnimatedSprite& other)
     , frameDuration(other.frameDuration)
     , timeElapsed(other.timeElapsed)
     , isAnimating(other.isAnimating)
-    , isLooping(other.isLooping) {
+    , isLooping(other.isLooping) 
+    , leaveOnLastFrame(other.leaveOnLastFrame){
 }
 
 Sprite* AnimatedSprite::Clone() const {
@@ -44,12 +45,14 @@ bool AnimatedSprite::Initialize(SDL_Texture* tex, int srcWidth, int srcHeight, i
     totalFrames = totalf;
     framesPerRow = fPerRow;
 
+    leaveOnLastFrame = false;
+
     Sprite::Initialize(tex, srcWidth, srcHeight, srcX, srcY, drawWidth, drawHeight);
 
     return true;
 }
 
-void AnimatedSprite::Process(float deltaTime, GameContext& context) {
+void AnimatedSprite::Process(float deltaTime) {
     if (!isAnimating) return;
 
     timeElapsed += deltaTime;
@@ -78,11 +81,13 @@ void AnimatedSprite::Process(float deltaTime, GameContext& context) {
 }
 
 void AnimatedSprite::Draw(Renderer* renderer) {
-    if(IsAnimating()) Sprite::Draw(renderer);
+    if(isAnimating || leaveOnLastFrame) Sprite::Draw(renderer);
 }
 
 void AnimatedSprite::Animate() { isAnimating = true; }
+void AnimatedSprite::Pause() { isAnimating = false; }
 void AnimatedSprite::Restart() { currentFrame = 0; timeElapsed = 0.0f; }
 bool AnimatedSprite::IsAnimating() const { return isAnimating; }
 void AnimatedSprite::SetLooping(bool loop) { isLooping = loop; }
+void AnimatedSprite::SetLeaveOnLastFrame(bool g) { leaveOnLastFrame = g; }
 void AnimatedSprite::SetFrameDuration(float s) { frameDuration = s; }

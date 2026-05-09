@@ -29,13 +29,13 @@ Grid::~Grid() {
 }
 
 //TODO accept file path and construct grid accordingly
-bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
+bool Grid::Initialize(SDL_Texture* cellTexture) {
 
     context.grid = this;
+    itemPickupRadius = 1;
 
     cells = new GridCell** [gridHeight];
     uniform_int_distribution<int> startNatureGen(1, 10);
-    uniform_int_distribution<int> natureTypeGen(1, 20);//30% tree 5% stump 40% rock 15% bush
 
     printf("MAKING WORLD GRID\n");
     for (int row = 0; row < gridHeight; ++row) {
@@ -57,19 +57,10 @@ bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
             if (startNatureGen(gen) == 1) {
-                int nt = natureTypeGen(gen);
-                NatureType type;
-                if (1 <= nt && nt <= 6)
-                    type = NatureType::TREE;
-                else if (7 <= nt && nt <= 7)
-                    type = NatureType::STUMP;
-                else if (8 <= nt && nt <= 15)
-                    type = NatureType::ROCK;
-                else if (16 <= nt && nt <= 20)
-                    type = NatureType::BUSH;
+                NatureType type = GetRandomNatureType();
 
                 GridCell* cell = GetCell(GridCoord(col, row));
-                PlaceNature(uniform_int_distribution<int>(2, 4), type, cell, context);//default 75% chance to spread
+                PlaceNature(uniform_int_distribution<int>(2, 4), type, cell);//default 75% chance to spread
             }
         }
     }
@@ -78,7 +69,7 @@ bool Grid::Initialize(SDL_Texture* cellTexture, GameContext& context) {
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
             GridCell* cell = GetCell(GridCoord(col, row));
-            PlaceFoliage(uniform_int_distribution<int>(3, 4), cell, context);
+            PlaceFoliage(uniform_int_distribution<int>(3, 4), cell);
         }
     }
     return true;
@@ -96,10 +87,14 @@ void Grid::Draw(Renderer* renderer) {
     for (int row = minRow; row <= maxRow; ++row)
         for (int col = minCol; col <= maxCol; ++col)
             cells[row][col]->Draw(renderer);
+
+    if(atlas) atlas->Draw(renderer);
 }
 
-void Grid::Process(float deltaTime, GameContext& context) {
+void Grid::Process(float deltaTime) {
+
     SDL_Rect vp = context.renderer->cam->GetViewportWorldRect();
+    uniform_int_distribution<int> startNatureGen(1, 80000000);//happens more often than youd think(every ~20 seconds)
 
     int minCol = max(0, (int)floor((float)vp.x / cellSize) - RENDER_DISTANCE);
     int maxCol = min(gridWidth - 1, (int)ceil((float)(vp.x + vp.w) / cellSize) + RENDER_DISTANCE);
@@ -109,9 +104,18 @@ void Grid::Process(float deltaTime, GameContext& context) {
     for (int row = 0; row < gridHeight; ++row) {
         for (int col = 0; col < gridWidth; ++col) {
             bool visible = row >= minRow && row <= maxRow && col >= minCol && col <= maxCol;
-            cells[row][col]->Process(deltaTime, context, visible);
+            cells[row][col]->Process(deltaTime, visible);
+
+            //spawn new nature?(rare)
+            if(startNatureGen(gen) == 6969420){
+                NatureType type = GetRandomNatureType();
+                GridCell* cell = GetCell(GridCoord(col, row));
+                PlaceNature(uniform_int_distribution<int>(2, 4), type, cell);
+            }
         }
     }
+
+    if(atlas) atlas->Process(deltaTime);
 }
 
 
@@ -196,7 +200,7 @@ vector<Collidable*> Grid::GetNearbyCollidables(GridCoord coord, int radius) {
 }
 
 //check if entity collides with anything. Act if they do
-bool Grid::ResolveCollisions(Entity* entity, GameContext& context) {
+bool Grid::ResolveCollisions(Entity* entity) {
 
     if (!entity) return false;
     bool anyCollision = false;
@@ -220,12 +224,32 @@ bool Grid::ResolveCollisions(Entity* entity, GameContext& context) {
             other->GetCollisionBound(), other->GetPosition(),
             penetration)) 
         {
-            entity->HandleCollision(other, penetration, context);
-            other->HandleCollision(entity, -penetration, context);
+            entity->HandleCollision(other, penetration);
+            other->HandleCollision(entity, -penetration);
             anyCollision = true;
         }
     }
     return anyCollision;
 }
 
+bool Grid::HasCollision(Entity* entity) {
+    if (!entity) return false;
 
+    const GridOccupancy& occ = entity->GetOccupancy();
+    int searchRadius = max(occ.maxCol - occ.minCol, occ.maxRow - occ.minRow) + 3;
+    GridCoord center = { (occ.minCol + occ.maxCol) / 2, (occ.minRow + occ.maxRow) / 2 };
+
+    for (Collidable* other : GetNearbyCollidables(center, searchRadius)) {
+        if (!other || other == entity) continue;
+
+        Vector2 penetration;
+        if (Collision::TestShapes(
+            entity->GetCollisionBound(), entity->GetPosition(),
+            other->GetCollisionBound(), other->GetPosition(),
+            penetration))
+        {
+            return true;
+        }
+    }
+    return false;
+}

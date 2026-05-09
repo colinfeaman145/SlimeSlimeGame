@@ -24,7 +24,7 @@ enum class MovementDir {
 class Renderer;
 class Sprite;
 
-class Entity : public virtual Element, public virtual Collidable, public virtual Attackable
+class Entity : public virtual Element, public Collidable, public Attackable
 {
 protected:
 	Sprite* sprite;
@@ -35,6 +35,7 @@ protected:
 	bool alive;
 	GridOccupancy occupancy;//what gridCells the entity is in(used for collision detection)
 	float movementSpeed;
+	bool moving;//only used if using Move()
 
 	//for flash on hit animation
 	float flashDuration;
@@ -44,11 +45,11 @@ public:
 	~Entity();
 	bool Initialize(Vector2 pos, Vector2 vel = Vector2(0, 0), Sprite* spr = nullptr);
 	void Draw(Renderer* renderer) override;
-	void Process(float deltaTime, GameContext& context) override;
+	void Process(float deltaTime) override;
 	void Rotate(float direction);
 	bool IsAlive() const;
-	void SetDead();
-	void Damage(int amount);
+	virtual void SetDead();
+	virtual void Damage(float amount) override;
 	void Heal(int amount);
 	float GetRadius();
 	Vector2 GetFacingDirection();
@@ -59,6 +60,7 @@ public:
 	float GetMovementSpeed();
 	void SetMovementSpeed(float speed);
 	void SetPosition(Vector2 pos);
+	void SetVelocity(Vector2 vel);
 	void Move(MovementDir m, float deltaTime);
 	void SetHealthBar(PercentageBar* bar);
 	PercentageBar* GetHealthBar();
@@ -71,7 +73,7 @@ public:
 	GridOccupancy GetOccupancy() const;
 	void SetOccupancy(GridOccupancy occ);
 
-	void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
+	void HandleCollision(Collidable* other, Vector2 penetration) override;
 
 
 };

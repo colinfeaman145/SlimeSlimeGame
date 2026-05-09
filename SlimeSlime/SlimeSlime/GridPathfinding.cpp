@@ -55,7 +55,15 @@ float Grid::GetEdgeCost(GridCoord from, GridCoord to, int dirIndex) const {
     return cost;
 }
 
-//called when wall placed
+//called when wall placed/removed near coord
+void Grid::InvalidateFlowFieldsNear(GridCoord changedAt, int radius) {
+    for (auto& [coord, field] : flowFields) {
+        if (abs(coord.col - changedAt.col) <= radius &&
+            abs(coord.row - changedAt.row) <= radius)
+            field.dirty = true;
+    }
+}
+
 void Grid::InvalidateAllFlowFields() {
     for (auto& [coord, field] : flowFields)
         field.dirty = true;
@@ -67,8 +75,12 @@ Vector2 Grid::GetFlowVector(GridCoord from, GridCoord target) {
         return Vector2(0.f, 0.f);
 
     auto it = flowFields.find(target);
-    if (it == flowFields.end() || it->second.dirty) {
-        ComputeFlowField(target);
+    if (it == flowFields.end()) {
+        ComputeFlowField(target, INT_MAX);//on first pass, fill whole grid
+        it = flowFields.find(target);
+    }
+    else if (it->second.dirty) {
+        ComputeFlowField(target, 15);
         it = flowFields.find(target);
     }
 
@@ -79,20 +91,21 @@ Vector2 Grid::GetFlowVector(GridCoord from, GridCoord target) {
     return it->second.vectors[curr1DIndex];
 }
 
-void Grid::ComputeFlowField(GridCoord target) {
+void Grid::ComputeFlowField(GridCoord target, int radius) {
     FlowField& field = flowFields[target];
     field.target = target;
     field.dirty = false;
+    field.computedRadius = radius;
     field.Reset(gridWidth, gridHeight);
 
     if (!IsValidCoord(target)) return;
 
-    RunDijkstra(target, field);
+    RunDijkstra(target, field, radius);
     SmoothFlowField(field);
-    DebugDumpFlowField(target, 102, 67, 10);
+    //DebugDumpFlowField(target, 102, 67, 10);
 }
 
-void Grid::RunDijkstra(GridCoord target, FlowField& field) {
+void Grid::RunDijkstra(GridCoord target, FlowField& field, int radius) {
 
     vector<float> cost(gridWidth * gridHeight, FLT_MAX);//cost to go from each cel to target
     using Entry = pair<float, int>; //define type to hold cost and 1D index
@@ -116,6 +129,9 @@ void Grid::RunDijkstra(GridCoord target, FlowField& field) {
         int curCol = cur1DIndex % gridWidth;
         int curRow = cur1DIndex / gridWidth;
 
+        if (abs(curCol - target.col) > radius ||
+            abs(curRow - target.row) > radius) continue;
+
         for (int d = 0; d < 8; ++d) {//iterate through directions
             int newCol = curCol + DIR_COL[d];
             int newRow = curRow + DIR_ROW[d];
@@ -127,11 +143,11 @@ void Grid::RunDijkstra(GridCoord target, FlowField& field) {
             if (edgeCost >= FLT_MAX) continue;//skip if direction not possible
 
             float newCost = curCost + edgeCost;
-            int new1DIndex= index(newCol, newRow);
+            int new1DIndex = index(newCol, newRow);
 
             if (newCost < cost[new1DIndex]) {//if found better cost
                 //update
-                cost[new1DIndex] = newCost; 
+                cost[new1DIndex] = newCost;
                 field.reached[new1DIndex] = true;
                 field.vectors[new1DIndex] = Vector2(//vector from new to current
                     -(float)DIR_COL[d],
@@ -204,6 +220,7 @@ void Grid::SmoothFlowField(FlowField& field) {
     }
 }
 
+//MADE BY AI
 void Grid::DebugDumpFlowField(GridCoord target, int centerCol, int centerRow, int radius) {
     auto it = flowFields.find(target);
     if (it == flowFields.end()) return;

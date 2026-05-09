@@ -34,6 +34,7 @@ struct RenderCommand {
     RenderLayer layer;
     int subOrder;
     Uint8 r, g, b, a;
+    SDL_RendererFlip flip;
     bool blendMode;
 };
 
@@ -60,7 +61,8 @@ public:
     void EndFrame();
 
     // draw a texture
-    void DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation = 0, RenderLayer layer = RenderLayer::OBJECTS, int subOrder = 0, bool bm = false);
+    void DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation = 0, 
+        RenderLayer layer = RenderLayer::OBJECTS, int subOrder = 0, bool bm = false, SDL_RendererFlip f = SDL_FLIP_NONE);
     void AddDrawRect(float x, float y, float w, float h, color c, int a, RenderLayer layer);
     void AddDrawCircle(float cx, float cy, float radius, color c, int a, RenderLayer layer);
     void AddDrawCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, color c, int a, RenderLayer layer);

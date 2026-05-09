@@ -5,45 +5,61 @@
 #include "Grid.hpp"
 #include "AttackCone.hpp"
 #include "Player.hpp"
+#include "EnemySpawner.hpp"
+#include "PushTrap.hpp"
+#include "SpikeTrap.hpp"
+#include "FireTrap.hpp"
+#include "FreezeTrap.hpp"
+#include "ExplosionTrap.hpp"
 
 class WorldScene : public Scene {
 public:
     WorldScene();
     virtual ~WorldScene();
 
-    virtual bool Initialize(GameContext& context);
-    virtual void Process(GameContext& context, float deltaTime);
-    virtual void Draw(Renderer* renderer);
+    virtual bool Initialize();
+    void Process(float deltaTime) override;
+    void Draw(Renderer* renderer) override;
+    void ReadInputs(float deltaTime) override;
+
+    void LoadSounds();
 
     void ToggleBuildMode();
-    void LeftMouseClick(GameContext& context);
-    void ChangeStructure(int s, GameContext& context);
-    void PlaceStructure(GameContext& context, bool isHologram = false);
-    void RemoveStructure(GameContext& context);
+    void LeftMouseClick();
+    void ChangeStructure(int s);
+    void ChangeMaterial();
+    void PlaceStructure(bool isHologram = false);
+    void RemoveStructure();
+    Structure* GetCurrentStructure();
+    int GetCurrentStructureNumber() const { return currentStructure; }
     Entity* GetPlayer();
     void MovePlayer(MovementDir dir, float deltaTime);
-    void Attack(GameContext& context);
+    void Attack();
 
-    void UpdateCurrentHoveredCell(GameContext& context);
-    void ApplyHoverEffect(GridCell* cell, GameContext& context);
-    void RemoveHoverEffect(GridCoord coord, GameContext& context);
+    void UpdateCurrentHoveredCell(bool canAfford);
+    void ApplyHoverEffect(GridCell* cell, bool canAfford);
+    void RemoveHoverEffect(GridCoord coord);
 
 private:
     float time;
+    float spawnCooldown;
+    float currentSpawnTime;
     
     Player* player;
+    EnemySpawner* spawner;
     GridCoord currentHoveredCellCoords;
     Structure* st;
-    Structure* wallH;
-    Structure* wallV;
+    Structure* wallHwood;
+    Structure* wallVwood;
+    Structure* wallHstone;
+    Structure* wallVstone;
+    int currentStructure;
+    bool isStone;
+    int pushTrapDirection;
+    bool buildMode;
     Text* woodCount;
     Text* stoneCount;
     Text* coinCount;
-    int currentStructure;
-    bool buildMode;
-
-    //temp
-    Enemy* enemy;
 };
 
 #endif

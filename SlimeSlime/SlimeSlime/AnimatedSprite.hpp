@@ -10,12 +10,14 @@ public:
     ~AnimatedSprite();
 
     bool Initialize(SDL_Texture* tex, int srcWidth, int srcHeight, int srcX, int srcY, int drawWidth, int drawHeight, int fPerRow, int totalf);
-    void Process(float deltaTime, GameContext& context) override;
+    void Process(float deltaTime) override;
     void Draw(Renderer* renderer) override;
 
     void SetFrameDuration(float seconds);
     void SetLooping(bool loop);
+    void SetLeaveOnLastFrame(bool g);
     void Animate();
+    void Pause();
     void Restart();
     bool IsAnimating() const;
 
@@ -31,6 +33,7 @@ private:
     float timeElapsed;
     bool isAnimating;
     bool isLooping;
+    bool leaveOnLastFrame;
 };
 
 

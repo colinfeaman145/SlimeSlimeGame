@@ -16,7 +16,7 @@ Particle::~Particle() {
 	delete sprite;
 }
 
-void Particle::Process(float deltaTime, GameContext& context) {
+void Particle::Process(float deltaTime) {
 	age += deltaTime;
 
 	velocity.x *= AIR_RESISTANCE;
@@ -24,7 +24,7 @@ void Particle::Process(float deltaTime, GameContext& context) {
 	position = position + (velocity * deltaTime);
 	rotation += rotationSpeed;
 	if (sprite) {
-		sprite->Process(deltaTime, context);
+		sprite->Process(deltaTime);
 		sprite->SetRotation(rotation);
 		sprite->SetPosition((int)position.x, (int)position.y);
 	}

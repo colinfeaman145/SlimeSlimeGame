@@ -17,7 +17,7 @@ public:
     bool Initialize(GameContext& context, const string& text, const string& fontPath, int pointSize);
     void SetText(const string& text);
     void Draw(Renderer* renderer) override { Sprite::Draw(renderer); }
-    void Process(float deltaTime, GameContext& context) override { Sprite::Process(deltaTime, context); }
+    void Process(float deltaTime) override { Sprite::Process(deltaTime); }
 
 private:
     bool BuildTexture();

@@ -9,7 +9,7 @@
 class Element {
 	public:
 		virtual void Draw(Renderer* renderer) = 0;
-		virtual void Process(float deltaTime, GameContext& context) = 0;
+		virtual void Process(float deltaTime) = 0;
 };
 
 //calls draw for:

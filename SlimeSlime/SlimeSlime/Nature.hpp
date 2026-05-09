@@ -15,14 +15,15 @@ public:
 		void SetPosition(Vector2 pos);
 		Vector2 GetPosition() const override;
 		void Draw(Renderer* renderer) override;
-		void Process(float deltaTime, GameContext& context) override;
+		void Process(float deltaTime) override;
 
-		void Damage(int amount);
+		void Damage(float amount) override;
 		void Break();
 		ResourceType GetDropType() const override;
 		int GetDropAmount() const override;
+		void SpawnDrops();
 
-		void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) override;
+		void HandleCollision(Collidable* other, Vector2 penetration) override;
 	protected:
 		NatureType type;
 };
@@ -61,7 +62,7 @@ static int CalculateDurability(int w, int h, int cellSize, NatureType type) {
 	}
 }
 
-static Nature* GetRandomTree(GameContext& context) {
+static Nature* GetRandomTree() {
 	int i = treeSpriteGen(gen);
 	int cellSize = context.grid->GetCellSize();
 
@@ -110,7 +111,7 @@ static Nature* GetRandomTree(GameContext& context) {
 	return n;
 }
 
-static Nature* GetRandomRock(GameContext& context) {
+static Nature* GetRandomRock() {
 	int i = rockSpriteGen(gen);
 	int cellSize = context.grid->GetCellSize();
 
@@ -155,7 +156,7 @@ static Nature* GetRandomRock(GameContext& context) {
 	return n;
 }
 
-static Nature* GetRandomStump(GameContext& context) {
+static Nature* GetRandomStump() {
 	int i = stumpSpriteGen(gen);
 	int cellSize = context.grid->GetCellSize();
 
@@ -187,7 +188,7 @@ static Nature* GetRandomStump(GameContext& context) {
 	return n;
 }
 
-static Nature* GetRandomBush(GameContext& context) {
+static Nature* GetRandomBush() {
 	int i = bushSpriteGen(gen);
 	int cellSize = context.grid->GetCellSize();
 

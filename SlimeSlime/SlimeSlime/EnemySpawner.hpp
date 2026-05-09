@@ -3,29 +3,48 @@
 
 #include "Element.hpp"
 #include "Enemy.hpp"
+#include "AnimatedSprite.hpp"
+#include <fstream>
+#include <json.hpp>
 
-enum class EnemyType {
-	WALL_FOCUS,//GREY
-	NORMAL,//GREEN
-	PLAYER_FOCUS,//BLUE
-	FAST,//PEACH
-	ATLAS_FOCUS,//ORANGE
-	EXPLOSIVE,//RED
-	//PINK = random
+using json = nlohmann::json;
+
+struct SpawnPool {//stores spawn weights for enemy types between min and max gameProgress
+	float min;
+	float max;
+	unordered_map<EnemyType, float> weights;
 };
 
 class EnemySpawner : public Element
 {
 	public:
-		void Initialize();
+		EnemySpawner() = default;
+		void Initialize(const string& enemyStats, const string& spawnPools);
+		void InitEnemyStats(const string& enemyStats);
+		void InitSpawnPools(const string& spawnPools);
+		void InitSprites(GameContext& context);
 		void Draw(Renderer* renderer) override;
-		void Process(float deltaTime, GameContext& context) override;
+		void Process(float deltaTime) override;
 
 		void SpawnEnemies(GameContext& context);
-		Enemy* GetRandomEnemy(int type);
+		Enemy* GetRandomEnemy(SpawnPool pool, float gameProg, int cellSize);
+		EnemyType GetRandomEnemyType(SpawnPool pool);
+		EnemyType StringToEnemyType(const string& str);
 
 	private:
 		vector<Enemy*> enemies;
+		vector<SpawnPool> spawnPools;
+
+		unordered_map<EnemyType, uniform_int_distribution<int>> damage;
+		unordered_map<EnemyType, uniform_int_distribution<int>> health;
+		unordered_map<EnemyType, uniform_real_distribution<float>> size;
+		unordered_map<EnemyType, uniform_real_distribution<float>> moveSpeed;
+		unordered_map<EnemyType, uniform_real_distribution<float>> attackSpeed;
+
+		//sprites
+		unordered_map<EnemyType, AnimatedSprite*> moving;
+		unordered_map<EnemyType, AnimatedSprite*> attacking;
+		unordered_map<EnemyType, AnimatedSprite*> death;
 };
 
 #endif

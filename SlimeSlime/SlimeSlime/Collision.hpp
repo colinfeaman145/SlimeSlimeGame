@@ -54,7 +54,20 @@ namespace Collision {
         if (distSq >= circle.radius * circle.radius) return false; //circle is not colliding with box
 
         float dist = sqrt(distSq);
-        if (dist == 0.0f) { outPen = { circle.radius, 0 }; return true; } //circle center is inside box, oh shit, offset the entire circle NOW
+        if (dist == 0.0f) { //circle center is inside box, oh shit, fuck
+            float leftDist = center.x - bMin.x;
+            float rightDist = bMax.x - center.x;
+            float topDist = center.y - bMin.y;
+            float bottomDist = bMax.y - center.y;
+
+            float minDist = min({ leftDist, rightDist, topDist, bottomDist });
+
+            if (minDist == leftDist) outPen = { -(leftDist + circle.radius), 0 };
+            else if (minDist == rightDist) outPen = { rightDist + circle.radius, 0 };
+            else if (minDist == topDist) outPen = { 0, -(topDist + circle.radius) };
+            else outPen = { 0, bottomDist + circle.radius };
+            return true;
+        }
 
         outPen = { dx / dist * (circle.radius - dist), dy / dist * (circle.radius - dist) }; //idk dude
         return true;

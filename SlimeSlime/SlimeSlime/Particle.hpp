@@ -24,7 +24,7 @@ public:
 
 	Particle(Sprite* s, Vector2 pos, Vector2 initVel, float rotSpeed, float maxAge, float a, float alphaDecayRate);
 	~Particle();
-	void Process(float deltaTime, GameContext& context);
+	void Process(float deltaTime);
 	void Draw(Renderer* renderer);
 };
 

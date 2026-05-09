@@ -7,9 +7,10 @@
 
 struct FlowField {
     std::vector<Vector2> vectors;
-    std::vector<bool>    reached;
-    GridCoord            target = { -1, -1 };
-    bool                 dirty = true;
+    std::vector<bool> reached;
+    GridCoord target = { -1, -1 };
+    bool dirty = true;
+    int computedRadius;
 
     void Reset(int gridWidth, int gridHeight) {
         int total = gridWidth * gridHeight;

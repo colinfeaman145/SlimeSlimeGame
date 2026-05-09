@@ -7,10 +7,13 @@ WorldScene::WorldScene() : time(0.0f) {
 WorldScene::~WorldScene() {
 }
 
-bool WorldScene::Initialize(GameContext& context) {
+bool WorldScene::Initialize() {
     currentStructure = 1;
+    isStone = false;
     buildMode = false;
     currentHoveredCellCoords = { -1, -1 };
+    spawnCooldown = 2.0f;
+    currentSpawnTime = spawnCooldown;
 
     ////make explosion animated entity
     //SDL_Texture* t = context.txm->LoadTexture(context.renderer, "../../assets/explosion.png");
@@ -48,18 +51,17 @@ bool WorldScene::Initialize(GameContext& context) {
     //elements.push_back(text);
 
     //make sound
-    //AudioManager* am = context.am;
-    //am->AddGroup("Default");
+    AudioManager* am = context.am;
+
+    LoadSounds();
     //am->SetGroupPitch("Default", 2);
     //am->LoadSound("../../assets/perfect-fart.ogg", "Fart");
     //am->PlaySound("Fart", "Default", {100, 100, 0}, {0, 0, 0});
 
-    //make grid
-    Grid* grid = new Grid(30000, 20000, 150);
+    //push grid
+    elements.push_back(context.grid);
+
     SDL_Texture* squareTex = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
-    SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
-    grid->Initialize(grassTex, context);
-    elements.push_back(grid);
 
     //make strucutre
     st = new Structure();
@@ -70,25 +72,58 @@ bool WorldScene::Initialize(GameContext& context) {
     structSpr->Initialize(structTex, 66, 66, 0, 0, 100, 100, 5, 5);
     st->Initialize(structSpr, false);
 
-    grid->SetAtlas(st);
+    context.grid->SetAtlas(st);
     st->SetPosition(Vector2(15500, 10600));
     elements.push_back(st);
 
     //make walls
-    wallH = new Structure();
-    wallV = new Structure();
-    Sprite* wallSprite = new Sprite();
-    wallSprite->Initialize(squareTex, 200, 200, 0, 0, 40, 40);
-    wallH->Initialize(wallSprite, true);
-    wallV->Initialize(wallSprite, true);
+    wallHwood = new Structure();
+    wallVwood = new Structure();
+    wallHstone = new Structure();
+    wallVstone = new Structure();
+    Sprite* woodWallSprite = new Sprite();
+    Sprite* stoneWallSprite = new Sprite();
+    Sprite* woodWallSpriteV = new Sprite();
+    Sprite* stoneWallSpriteV = new Sprite();
+    SDL_Texture* woodWallTex = context.txm->LoadTexture(context.renderer, "../../assets/woodWallTexture.PNG");
+    SDL_Texture* stoneWallTex = context.txm->LoadTexture(context.renderer, "../../assets/stoneWallTexture.PNG");
+    SDL_Texture* woodWallTexV = context.txm->LoadTexture(context.renderer, "../../assets/woodWallTextureV.PNG");
+    SDL_Texture* stoneWallTexV = context.txm->LoadTexture(context.renderer, "../../assets/stoneWallTextureV.PNG");
+    woodWallSprite->Initialize(woodWallTex, 430, 231, 0, 0, 40, 40);
+    stoneWallSprite->Initialize(stoneWallTex, 287, 103, 0, 0, 40, 40);
+    woodWallSpriteV->Initialize(woodWallTexV, 231, 430, 0, 0, 40, 40);
+    stoneWallSpriteV->Initialize(stoneWallTexV, 103, 287, 0, 0, 40, 40);
+    wallHwood->Initialize(woodWallSprite, true);
+    wallVwood->Initialize(woodWallSpriteV, true);
+    wallHstone->Initialize(stoneWallSprite, true);
+    wallVstone->Initialize(stoneWallSpriteV, true);
+    wallHwood->SetDurability(40);
+    wallVwood->SetDurability(40);
+    wallVstone->SetDurability(120);
+    wallVstone->SetDurability(120);
+
+    //make wall recipes
+    unordered_map<ResourceType, int> recWood;
+    unordered_map<ResourceType, int> recStone;
+    recWood.insert({ ResourceType::WOOD, 3 });
+    recStone.insert({ ResourceType::WOOD, 2 });
+    recStone.insert({ ResourceType::STONE, 5 });
+
+    wallHwood->SetRecipe(recWood);
+    wallVwood->SetRecipe(recWood);
+    wallHstone->SetRecipe(recStone);
+    wallVstone->SetRecipe(recStone);
 
     //make player
     player = new Player();
-    SDL_Texture* playerTex = context.txm->LoadTexture(context.renderer, "../../assets/ball.png");
-    Sprite* playerSprite = new Sprite();
-    playerSprite->Initialize(playerTex, 307, 307, 0, 0, 75, 75);
-    player->Initialize(Vector2(15000, 10000), 100, Vector2(0, 0), playerSprite);
-    playerSprite->SetDrawLayer(RenderLayer::PLAYER);
+    SDL_Texture* playerBTex = context.txm->LoadTexture(context.renderer, "../../assets/player_back.png");
+    AnimatedSprite* playerBSprite = new AnimatedSprite();
+    playerBSprite->Initialize(playerBTex, 235, 174, 0, 0, 75, 75, 2, 2);
+    playerBSprite->SetDrawLayer(RenderLayer::PLAYER);
+    playerBSprite->SetFrameDuration(0.25);
+    playerBSprite->SetLooping(true);
+    playerBSprite->SetLeaveOnLastFrame(true);
+    player->Initialize(Vector2(15000, 10000), 100, Vector2(0, 0), playerBSprite);
     player->SetMovementSpeed(300);
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     elements.push_back(player);
@@ -99,18 +134,16 @@ bool WorldScene::Initialize(GameContext& context) {
     AnimatedSprite* swooshSpr = new AnimatedSprite();
     swooshSpr->SetFrameDuration(0.02);
     swooshSpr->SetLooping(false);
-    swooshSpr->Initialize(swooshTex, 307, 259, 0, 0, grid->GetCellSize(), grid->GetCellSize(), 5, 10);
+    swooshSpr->Initialize(swooshTex, 307, 259, 0, 0, context.grid->GetCellSize(), context.grid->GetCellSize(), 5, 10);
     attackCone->Initialize(player->GetPosition(), swooshSpr);
     context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
 
     player->SetAttackCone(attackCone);
 
-    //make an enemy
-    enemy = new Enemy();
-    Sprite* enemySprite = playerSprite->Clone();
-    enemySprite->SetColor({ 255, 50, 50 });
-    enemy->Initialize(Vector2(15000, 9990), enemySprite, 15, 5, 1, 10);
-    elements.push_back(enemy);
+    //make enemy spawner
+    spawner = new EnemySpawner();
+    spawner->Initialize("../../data/enemyStats.txt", "../../data/spawnPools.json");
+    elements.push_back(spawner);
 
     //UI
     //wood
@@ -153,28 +186,40 @@ bool WorldScene::Initialize(GameContext& context) {
     UI.push_back(coinCount);
 
 
-
     return true;
 }
 
-void WorldScene::Process(GameContext& context, float deltaTime) {
+void WorldScene::Process(float deltaTime) {
+
+    ReadInputs(deltaTime);
+
+    currentSpawnTime -= deltaTime;
     time += deltaTime;
+    context.gameProgress = time / 500;
     for (Element* e : elements) {
-        e->Process(deltaTime, context);
+        e->Process(deltaTime);
     }
 
+    //spawn enemies
+    if (currentSpawnTime < 0) {
+        spawner->SpawnEnemies(context);
+        currentSpawnTime = spawnCooldown;
+    }
+
+    //update ui
     woodCount->SetText(to_string(player->GetWood()));
     stoneCount->SetText(to_string(player->GetStone()));
     coinCount->SetText(to_string(player->GetCoins()));
 
+    //updateHover
+    UpdateCurrentHoveredCell(player->CanMakeRecipe(GetCurrentStructure()->GetRecipe()));
+
+    //collision updates
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     context.grid->UpdateOccupancy((Entity*)player->GetAttackCone(), &GridCell::AddOther, &GridCell::RemoveOther);
-    context.grid->ResolveCollisions(player, context); //collison updates
-    context.grid->ResolveCollisions(enemy, context); //collison updates
+    context.grid->ResolveCollisions(player); //collison updates
+
     context.renderer->cam->Follow(player->GetPosition());//follow player
-
-    //text->SetText(to_string((int)time));
-
 }
 
 void WorldScene::Draw(Renderer* renderer) {
@@ -186,84 +231,115 @@ void WorldScene::Draw(Renderer* renderer) {
     }
 }
 
-void WorldScene::ChangeStructure(int s, GameContext& context) {
-    if (s == currentStructure) return;
-    if (buildMode)
-        RemoveHoverEffect(currentHoveredCellCoords, context); // clean up old hologram if changed while in build mode
-    currentStructure = s;
-}
-
-void WorldScene::ToggleBuildMode() {
-    buildMode = !buildMode;
-}
-
-void WorldScene::LeftMouseClick(GameContext& context) {
-    if (buildMode)
-        PlaceStructure(context);
-    else
-        Attack(context);
-}
-
 Entity* WorldScene::GetPlayer() {
     return player;
 }
 
-void WorldScene::MovePlayer(MovementDir dir, float deltaTime) {
-    player->Move(dir, deltaTime);
-}
-
-void WorldScene::Attack(GameContext& context) {
+void WorldScene::Attack() {
     AttackCone* cone = player->GetAttackCone();
     if (cone->CanAttack()) {
-        context.grid->ResolveCollisions(cone, context);
         cone->PlayAttack();
+        context.grid->ResolveCollisions(cone);
+        cone->ClearAttack();
     }
 }
 
 
 //STRUCTURE PLACEMENT
-void WorldScene::PlaceStructure(GameContext& context, bool isHologram) {
+void WorldScene::PlaceStructure(bool isHologram) {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
     GridCoord coord = context.grid->WorldToGrid(vec2);
+    Structure* s = GetCurrentStructure();
+    bool occupied = false;
 
-    if (!isHologram) RemoveHoverEffect(coord, context);
+    if (!isHologram) RemoveHoverEffect(coord);
     if (currentStructure == 1) {
-        context.grid->PlaceWall(coord, WallDirection::NORTH, wallH);
-
-        if (!player->HasEnoughWood(wallH->GetBuildCost()) || isHologram) return;//if no have money, die
-        player->RemoveWood(wallH->GetBuildCost());
-        context.grid->InvalidateAllFlowFields();
+        occupied = context.grid->GetCell(coord)->HasWall(WallDirection::NORTH);
+        context.grid->PlaceWall(coord, WallDirection::NORTH, s);
     }
     else if (currentStructure == 2) {
-        context.grid->PlaceWall(coord, WallDirection::WEST, wallV);
+        occupied = context.grid->GetCell(coord)->HasWall(WallDirection::WEST);
+        context.grid->PlaceWall(coord, WallDirection::WEST, s);
+    }
+    else if (currentStructure >= 3) {
+        occupied = context.grid->GetCell(coord)->HasStructure();
+        context.grid->PlaceStructure(s, coord);
+    }
 
-        if (!player->HasEnoughStone(wallV->GetBuildCost()) || isHologram) return;//if no have money, die
-        player->RemoveStone(wallV->GetBuildCost());
-        context.grid->InvalidateAllFlowFields();
+    if(occupied) context.am->PlaySound("CantPlace", "Default", { player->GetPosition().x, 100, player->GetPosition().y }, { 0, 0, 0 }, Vector2(1, 1));
+    if (isHologram || occupied) { //only take payment if real and can place
+        return;
     }
-    else if (currentStructure == 3) {
-        //grid->PlaceStructure(GetRandomTree(context, grid->GetCellSize()), coord);
+
+    if (!s) return;//something fucked up
+    auto recipe = s->GetRecipe();
+    if (!player->CanMakeRecipe(recipe)) {//cant make recipe
+        RemoveStructure();
+        context.am->PlaySound("CantPlace", "Default", { player->GetPosition().x, 100, player->GetPosition().y }, { 0, 0, 0 }, Vector2(1, 1));
+        return;
     }
+    context.am->PlaySound("BuildPlace", "Default", { player->GetPosition().x, 100, player->GetPosition().y }, { 0, 0, 0 }, Vector2(0.85, 1.15));
+    player->RemoveRecipeCost(recipe);
+
+    //play sound
+
+    context.grid->InvalidateFlowFieldsNear(coord, 10);
 }
 
 //only called by player, never hologram
-void WorldScene::RemoveStructure(GameContext& context) {
+void WorldScene::RemoveStructure() {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
     GridCoord coord = context.grid->WorldToGrid(vec2);
+    bool structRemoved = false;
 
     if (currentStructure == 1) {
-        context.grid->RemoveWall(coord, WallDirection::NORTH);
+        structRemoved = context.grid->RemoveWall(coord, WallDirection::NORTH);
     }
     else if (currentStructure == 2) {
-        context.grid->RemoveWall(coord, WallDirection::WEST);
+        structRemoved = context.grid->RemoveWall(coord, WallDirection::WEST);
     }
     else {
-        context.grid->RemoveStructure(coord);
+        structRemoved = context.grid->RemoveStructure(coord);
     }
-    context.grid->InvalidateAllFlowFields();
+
+    if(structRemoved)
+        context.am->PlaySound("BreakStructure", "Default", { player->GetPosition().x, 100, player->GetPosition().y}, {0, 0, 0}, Vector2(0.85, 1.15));
+    context.grid->InvalidateFlowFieldsNear(coord, 10);
 }
 
+Structure* WorldScene::GetCurrentStructure() {
+    Trap* s = nullptr;
+    switch (currentStructure) {
+        case(1)://horizontal wall
+             return isStone ? wallHstone : wallHwood;
+        case(2):
+            return isStone ? wallVstone : wallVwood;
+        case(3):
+            return nullptr;
+        case(4):
+            s =  new PushTrap();
+            static_cast<PushTrap*>(s)->Initialize(pushTrapDirection);
+            return s;
+        case(5):
+            s = new SpikeTrap();
+            s->Initialize();
+            return s;
+        case(6):
+            s = new FireTrap();
+            s->Initialize();
+            return s;
+        case(7):
+            s = new FreezeTrap();
+            s->Initialize();
+            return s;
+        case(8):
+            s = new ExplosionTrap();
+            s->Initialize();
+            return s;
+    }
+    return nullptr;
+}
 
 

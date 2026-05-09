@@ -1,0 +1,138 @@
+{
+  "ranges": [
+    {
+      "min": 0.0,
+      "max": 1.0,
+      "weights": {
+        "Green": 0.5,
+        "Grey": 1
+      }
+    },
+    {
+      "min": 1.0,
+      "max": 1.5,
+      "weights": {
+        "Green": 0.5,
+        "Grey": 0.5
+      }
+    },
+    {
+      "min": 1.5,
+      "max": 2.0,
+      "weights": {
+        "Green": 0.5,
+        "Blue": 0.5,
+        "Grey": 0.5
+      }
+    },
+    {
+      "min": 2.0,
+      "max": 2.25,
+      "weights": {
+        "Green": 0.25,
+        "Blue": 1.5,
+        "Grey": 0.25
+      }
+    },
+    {
+      "min": 2.25,
+      "max": 2.5,
+      "weights": {
+        "Green": 0.5,
+        "Blue": 0.25,
+        "Grey": 1.5
+      }
+    },
+    {
+      "min": 2.5,
+      "max": 3.5,
+      "weights": {
+        "Green": 0.25,
+        "Blue": 0.5,
+        "Grey": 0.25,
+        "Peach": 0.5,
+        "Orange": 0.5,
+        "Pink": 0.1
+      }
+    },
+    {
+      "min": 3.5,
+      "max": 4.0,
+      "weights": {
+        "Green": 0.1,
+        "Blue": 0.5,
+        "Grey": 1.5,
+        "Peach": 0.25,
+        "Orange": 1.5,
+        "Pink": 0.1
+      }
+    },
+    {
+      "min": 4.0,
+      "max": 4.25,
+      "weights": {
+        "Green": 0.5,
+        "Blue": 0.1,
+        "Grey": 0.5,
+        "Peach": 0.5,
+        "Orange": 0.1,
+        "Red": 1.0
+      }
+    },
+    {
+      "min": 4.25,
+      "max": 5,
+      "weights": {
+        "Green": 0.5,
+        "Blue": 0.25,
+        "Peach": 0.75,
+        "Orange": 1.0,
+        "Red": 0.25,
+        "Pink": 0.25
+      }
+    },
+        {
+      "min": 5,
+      "max": 5.5,
+      "weights": {
+        "Green": 1.0,
+        "Blue": 1.0,
+        "Peach": 1.5,
+        "Orange": 0.25,
+        "Pink": 0.25
+      }
+    },
+    {
+      "min": 5.5,
+      "max": 6.5,
+      "weights": {
+        "Green": 0.5,
+        "Blue": 0.1,
+        "Peach": 0.75,
+        "Orange": 1.25,
+        "Red": 0.35,
+        "Pink": 0.5
+      }
+    },
+    {
+      "min": 6.5,
+      "max": 8,
+      "weights": {
+        "Peach": 1.0,
+        "Orange": 1.5,
+        "Red": 0.5,
+        "Pink": 0.5
+      }
+    },
+    {
+      "min": 8,
+      "max": 100,
+      "weights": {
+        "Peach": 1.0,
+        "Orange": 2.5,
+        "Red": 0.75,
+        "Pink": 1.0
+      }
+    }
+  ]
+}

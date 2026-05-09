@@ -1,4 +1,5 @@
 #include "Grid.hpp"
+#include "Foliage.hpp"
 
 bool Grid::CanPlaceWall(GridCoord coord, WallDirection dir) {
     GridCell* cell = GetCell(coord);
@@ -46,6 +47,12 @@ bool Grid::PlaceWall(GridCoord coord, WallDirection dir, Structure* w) {
     wall->SetPosition(wallPos);
     wall->GetSprite()->SetDrawLayer(RenderLayer::STRUCTURES);
     cell->PlaceWall(dir, wall);
+    vector<Collidable*> collidables = GetNearbyCollidables(coord, 2);
+    for (Collidable* c : collidables) {//remove folaige where wall placed
+        if (Foliage* f = dynamic_cast<Foliage*>(c)) {
+            ResolveCollisions(f);
+        }
+    }
 
     return true;
 }

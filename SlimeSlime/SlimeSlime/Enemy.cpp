@@ -1,35 +1,173 @@
 #include "Enemy.hpp"
 #include "Grid.hpp"
 #include "Player.hpp"
+#include "Nature.hpp"
 
-void Enemy::Initialize(Vector2 pos, Sprite* spr, float retarget, int targetRad, float atlasTarget, float playerTarget) {
+Enemy::Enemy() {}
+
+Enemy::~Enemy() {
+    delete explosion;
+    delete moving;
+    delete attacking;
+    delete death;
+    Entity::~Entity();
+}
+
+void Enemy::Initialize(Vector2 pos, AnimatedSprite* spr, float retarget, int targetRad, float atlasTarget, float playerTarget) {
     retargetCooldown = retarget;
     currentRetargetTime = retarget;
     targetRadius = targetRad;
     adjustCourseTimer = 1.5f;
     atlasTargetChance = max(atlasTarget, 0.0f);//must be atleast 0
-    playerTargetChance = max(playerTarget, 0.0f);//must be atleast 0
+    playerTargetChance = max(playerTarget, 0.0f);//must be atleast 
     Entity::Initialize(pos, Vector2(), spr);
+    collideType = CollidableType::ENEMY;
+    previousPosition = pos;
+    stuckTime = 0;
+    framesSinceLastHone = 0;
     movementSpeed = 35;
+    explosion = nullptr;
+    SetExplosion(); //returns if not needed
     //target and velocity defined in process on first pass
 }
 
 void Enemy::Draw(Renderer* renderer) {
     Entity::Draw(renderer);
+    if (explosion) explosion->Draw(renderer);
 }
 
-void Enemy::Process(float deltaTime, GameContext& context) {
+void Enemy::Process(float deltaTime) {
+
+    if (!IsAlive()) return;
+
+    //update timers
     currentRetargetTime -= deltaTime;
     adjustCourseTimer -= deltaTime;
-    if (currentRetargetTime < 0 || !target) {
-        target = FindNewTarget(context);
-        currentRetargetTime = retargetCooldown;
+    currentAttackCooldown -= deltaTime;
+    frozenTime -= deltaTime;
+    framesSinceLastHone++;
+
+    //standard process
+    Entity::Process(deltaTime);
+    if (explosion) explosion->Process(deltaTime);
+
+    if (frozenTime > 0) {
+        SetFlash(true);
+        context.grid->UpdateEnemyOccupancy(this);
+        return;
+    }
+    else {
+        moving->Animate();
     }
 
-    Hone(context); //move towards target
+    if (!attacking->IsAnimating() && framesSinceLastHone >= 5) {//if walking
+        Hone(); //move towards target
+        sprite = moving;
+        framesSinceLastHone = 0;
+    }
    
-    Entity::Process(deltaTime, context);
     context.grid->UpdateEnemyOccupancy(this);
+    SetSpriteDirection(velocity.x < 0);//face correction direciton
+
+    //check if stuck
+    float distance = (GetPosition() - previousPosition).Length();
+    previousPosition = GetPosition(); // update every frame
+    if (distance > 1.0f)
+        stuckTime = 0;
+    else 
+        stuckTime += deltaTime;
+
+    //check stuckTime in handleCollision
+}
+
+void Enemy::SetSprites(AnimatedSprite* move, AnimatedSprite* attack, AnimatedSprite* die) {
+    moving = static_cast<AnimatedSprite*>(move->Clone());
+    attacking = static_cast<AnimatedSprite*>(attack->Clone());
+    death = static_cast<AnimatedSprite*>(die->Clone());
+    moving->Animate();
+}
+
+void Enemy::SetSpritesDrawSize(int size) {
+    moving->SetDrawSize(size, size);
+    attacking->SetDrawSize(size, size);
+    death->SetDrawSize(size, size);
+
+    radius = size / 4;
+    collisionBound = CollisionShape::MakeCircle(radius, Vector2(radius, radius));
+    SetCanCollide(true);
+}
+
+void Enemy::SetSpriteDirection(bool b) {
+    moving->SetFlip(b);
+    attacking->SetFlip(b);
+    death->SetFlip(b);
+}
+
+void Enemy::SetType(EnemyType t) {
+    type = t;
+}
+
+EnemyType Enemy::GetType() {
+    return type;
+}
+
+void Enemy::SetDamage(int d) {
+    damage = d;
+}
+
+int Enemy::GetDamage() {
+    return damage;
+}
+
+void Enemy::SetDead() {
+    alive = false;
+
+    //spawn drops
+    ResourceDrop drops = ResourceDrop();
+    drops.amount = GetDropAmount();
+    drops.type = GetDropType();
+    drops.spawnerPosition = GetPosition();
+    drops.spawnerSize = GetSprite()->GetDrawSize();
+    context.grid->SpawnDrops(drops);
+
+    SetCanCollide(false);
+    moving->Pause();
+    attacking->Pause();
+    death->Restart();
+    death->Animate();
+    death->SetPosition(position.x, position.y);
+    sprite = death;
+}
+
+void Enemy::Damage(float amount) {
+    Entity::Damage(amount);
+    uniform_int_distribution<int> slimeSoundGen(1, 3);
+    context.am->PlaySound("SlimeHit" + to_string(slimeSoundGen(gen)), "Default", { position.x, 100, position.y }, { 0, 0, 0 }, Vector2(0.85, 1.15));
+}
+
+bool Enemy::IsDying() {
+    bool isDying = !alive;
+    if (type == EnemyType::EXPLOSIVE) {
+        isDying &= static_cast<AnimatedSprite*>(explosion->GetSprite())->IsAnimating();
+    }
+    isDying &= sprite == death;
+    isDying &= death->IsAnimating();
+    return isDying;
+}
+
+void Enemy::SetAttackCooldown(float atckCool) {
+    attackCooldown = atckCool;
+    currentAttackCooldown = attackCooldown;
+}
+
+void Enemy::SetExplosion() {
+    if (type != EnemyType::EXPLOSIVE) return;
+
+    explosion = new Explosion(radius * 4, damage * 10);
+}
+
+float Enemy::GetAttackCooldown() {
+    return attackCooldown;
 }
 
 ResourceType Enemy::GetDropType() const {
@@ -37,14 +175,40 @@ ResourceType Enemy::GetDropType() const {
 }
 
 int Enemy::GetDropAmount() const {
-    return 10;
+    int scaler = context.gameProgress + 1;
+    uniform_int_distribution<int> coinsGen(3, 6);
+    switch (type) {
+    case(EnemyType::WALL_FOCUS):
+        return coinsGen(gen) * ((int)(scaler * 0.75) + 1);
+        break;
+    case(EnemyType::NORMAL):
+        return coinsGen(gen) * (int)(scaler);
+        break;
+    case(EnemyType::PLAYER_FOCUS):
+        return coinsGen(gen) * (int)(scaler);
+        break;
+    case(EnemyType::FAST):
+        return coinsGen(gen) * (int)(scaler * 1.5);
+        break;
+    case(EnemyType::ATLAS_FOCUS):
+        return coinsGen(gen) * (int)(scaler * 1.5);
+        break;
+    case(EnemyType::EXPLOSIVE):
+        return coinsGen(gen) * (int)(scaler * 3);
+        break;
+    case(EnemyType::RANDOM):
+        return coinsGen(gen) * (int)(scaler * 10);
+        break;
+    default:
+        return coinsGen(gen);
+    }
 }
 
 void Enemy::SetTarget(Collidable* c) {
     target = c;
 }
 
-Collidable* Enemy::FindNewTarget(GameContext& context) {
+Collidable* Enemy::FindNewTarget() {
 
     uniform_real_distribution<float> targetAtlasGen(0, atlasTargetChance);
     uniform_real_distribution<float> targetPlayerGen(0, playerTargetChance);
@@ -55,10 +219,10 @@ Collidable* Enemy::FindNewTarget(GameContext& context) {
     vector<Collidable*> collidables = context.grid->GetNearbyCollidables(lastCell, targetRadius);
     vector<Collidable*> structures;
     for (Collidable* c : collidables) {//filter
-        if (dynamic_cast<Player*>(c) && targetPlayerGen(gen) <= 1) {
+        if (c->GetCollidableType() == CollidableType::PLAYER && targetPlayerGen(gen) <= 1) {
             return c;
         }
-        else if (dynamic_cast<Structure*>(c)) {
+        else if (c->GetCollidableType() == CollidableType::STRUCTURE) {
             structures.push_back(c);
         }
     }
@@ -71,7 +235,12 @@ Collidable* Enemy::FindNewTarget(GameContext& context) {
     return structures.at(randomStructureGen(gen));
 }
 
-void Enemy::Hone(GameContext& context) {
+void Enemy::Hone() {
+
+    if (currentRetargetTime < 0) {
+        target = FindNewTarget();
+        currentRetargetTime = retargetCooldown;
+    }
     if (!target) return;
 
     GridCoord myCell = context.grid->WorldToGrid(GetPosition());
@@ -92,11 +261,10 @@ void Enemy::Hone(GameContext& context) {
 
     float dx = GetCenter().x - cellCenter.x;
     float dy = GetCenter().y - cellCenter.y;
-    float distToCenter = sqrtf(dx * dx + dy * dy);
+    float threshold = cellSize * 0.35f;
 
     //smaller = closer to center before allowing vector change
-    if (distToCenter < cellSize * 0.35f || adjustCourseTimer < 0) {
-        printf("ADJUST\n");
+    if ((dx * dx + dy * dy) < (threshold * threshold) || adjustCourseTimer < 0) {
         Vector2 flowDir = context.grid->GetFlowVector(myCell, targetCoord);
         if (flowDir.x != 0.f || flowDir.y != 0.f)
             velocity = flowDir * movementSpeed;
@@ -105,20 +273,66 @@ void Enemy::Hone(GameContext& context) {
     lastCell = myCell;
     return;
 
-    
 }
 
+void Enemy::Attack(Attackable* a) {
+    if (currentAttackCooldown > 0) return;//cant attack
+    if (attacking->IsAnimating()) return;
 
-//landing hit on player refreshes cooldown time so that it keeps tracking player. 
-//If goes a while without landing hit, automatically will switch target
-void Enemy::HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) {
-    if (other->CanCollide()) {
-        position = GetCorner() + penetration;
+    if (Nature* n = dynamic_cast<Nature*>(a)) {
+        a->Damage(damage * 4);//fuck up nature HARD;
     }
+    else {
+        a->Damage(damage);//do normal damage
+        if (type == EnemyType::EXPLOSIVE) TryExplode();
+        if (a->GetHealth() <= 0) {//if target died, find new one
+            if (a == dynamic_cast<Attackable*>(target))
+                target = nullptr;
+        }
+    }
+    attacking->Restart();
+    attacking->Animate();
+    attacking->SetPosition(position.x, position.y);
+    sprite = attacking;
+    velocity = Vector2();//stop moving when attacking
+    currentAttackCooldown = attackCooldown;
 
-    if (dynamic_cast<Structure*>(other)) {
-        //printf("Velocity: %f, %f\n", velocity.x, velocity.y);
-        //printf("Position: %f, %f\n", position.x, position.y);
-        //printf("Last Cell: %d, %d\n", lastCell.col, lastCell.row);
+    uniform_int_distribution<int> slimeSoundGen(1, 3);
+    context.am->PlaySound("SlimeHit" + to_string(slimeSoundGen(gen)), "Default", {position.x, 100, position.y}, {0, 0, 0}, Vector2(0.85, 1.15));
+}
+
+void Enemy::TryExplode() {
+    uniform_int_distribution<int> explodeChance(1, 15);
+    if (explodeChance(gen) == 2) {
+        explosion->Explode();
+        SetDead();
+    }
+}
+
+void Enemy::SetFrozen(float duration) {
+    velocity = Vector2();
+    frozenTime = max(duration, frozenTime);
+    sprite = moving;
+    static_cast<AnimatedSprite*>(sprite)->Pause();
+}
+
+void Enemy::HandleCollision(Collidable* other, Vector2 penetration) {
+
+    Entity::HandleCollision(other, penetration);
+    if (other->GetCollidableType() == CollidableType::ENEMY) return;//dont attack own kind
+
+    if (other->GetCollidableType() == CollidableType::PLAYER) {//if its player
+        Attack(static_cast<Player*>(other));
+        currentRetargetTime = retargetCooldown;//reset cooldown so focus on player isnt lost
+    }
+    else if (stuckTime >= .5 || other == target) {//if stuck or found target
+        if(other->CanCollide()){
+            if (other->GetCollidableType() == CollidableType::STRUCTURE)
+                Attack(static_cast<Structure*>(other));
+            else if (other->GetCollidableType() == CollidableType::NATURE)
+                Attack(static_cast<Nature*>(other));
+            else
+                return;
+        }
     }
 }

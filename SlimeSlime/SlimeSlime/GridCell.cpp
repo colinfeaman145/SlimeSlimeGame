@@ -39,12 +39,12 @@ void GridCell::Draw(Renderer* renderer) {
     DrawDrops(renderer);
 }
 
-void GridCell::Process(float deltaTime, GameContext& context, bool isRendered) {
-    if (sprite) sprite->Process(deltaTime, context);
-    if (strctr) strctr->Process(deltaTime, context);
-    ProcessWalls(deltaTime, context);
-    if (isRendered) ProcessNature(deltaTime, context);
-    if (isRendered) ProcessDrops(deltaTime, context);
+void GridCell::Process(float deltaTime, bool isRendered) {
+    if (sprite) sprite->Process(deltaTime);
+    if (strctr) strctr->Process(deltaTime);
+    ProcessWalls(deltaTime);
+    if (isRendered) ProcessNature(deltaTime);
+    if (isRendered) ProcessDrops(deltaTime);
 }
 
 void GridCell::DrawWalls(Renderer* renderer) {
@@ -52,9 +52,9 @@ void GridCell::DrawWalls(Renderer* renderer) {
     if (walls[(int)WallDirection::WEST]) walls[(int)WallDirection::WEST]->Draw(renderer);
 }
 
-void GridCell::ProcessWalls(float deltaTime, GameContext& context) {
-    if (walls[(int)WallDirection::NORTH])  walls[(int)WallDirection::NORTH]->Process(deltaTime, context);
-    if (walls[(int)WallDirection::WEST]) walls[(int)WallDirection::WEST]->Process(deltaTime, context);
+void GridCell::ProcessWalls(float deltaTime) {
+    if (walls[(int)WallDirection::NORTH])  walls[(int)WallDirection::NORTH]->Process(deltaTime);
+    if (walls[(int)WallDirection::WEST]) walls[(int)WallDirection::WEST]->Process(deltaTime);
 }
 
 void GridCell::DrawNature(Renderer* renderer) {
@@ -62,11 +62,11 @@ void GridCell::DrawNature(Renderer* renderer) {
         n->Draw(renderer);
 }
 
-void GridCell::ProcessNature(float deltaTime, GameContext& context) {
+void GridCell::ProcessNature(float deltaTime) {
     for (auto it = nature.begin(); it != nature.end(); ) {//iterate through nature
         Nature* n = *it;
         if (n->IsAlive()) {
-            n->Process(deltaTime, context);
+            n->Process(deltaTime);
             ++it;
         }
         else {//if set dead, remove it
@@ -81,11 +81,11 @@ void GridCell::DrawDrops(Renderer* renderer) {
         d->Draw(renderer);
 }
 
-void GridCell::ProcessDrops(float deltaTime, GameContext& context) {
-    for (auto it = drops.begin(); it != drops.end(); ) {//iterate through nature
+void GridCell::ProcessDrops(float deltaTime) {
+    for (auto it = drops.begin(); it != drops.end(); ) {//iterate through drops
         Resource* d = *it;
         if (d->IsAlive()) {
-            d->Process(deltaTime, context);
+            d->Process(deltaTime);
             ++it;
         }
         else {//if set dead, remove it

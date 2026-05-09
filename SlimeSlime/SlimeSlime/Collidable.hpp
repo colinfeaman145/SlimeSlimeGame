@@ -7,6 +7,16 @@
 
 using namespace std;
 
+enum class CollidableType { 
+    ENEMY, 
+    PLAYER, 
+    STRUCTURE, 
+    NATURE, 
+    RESOURCE, 
+    ATTACK_CONE,
+    OTHER
+};
+
 struct AABB {
     float width, height;
 
@@ -87,6 +97,7 @@ struct CollisionShape {
 class Collidable {
     protected:
         CollisionShape collisionBound;
+        CollidableType collideType;
         bool canCollide; //can you go through this collidable
     public:
         virtual CollisionShape& GetCollisionBound() { return collisionBound; }
@@ -94,6 +105,7 @@ class Collidable {
         virtual bool CanCollide() const { return canCollide; }
         virtual inline void SetCanCollide(bool collide) { canCollide = collide; }
         virtual Vector2 GetPosition() const = 0;
+        virtual CollidableType GetCollidableType() const { return collideType; }
         virtual Vector2 GetCenter() const {
             Vector2 wp = collisionBound.WorldPosition(GetPosition());
             switch (collisionBound.type) {
@@ -108,7 +120,7 @@ class Collidable {
                 };
             }
         }
-        virtual void HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) = 0;
+        virtual void HandleCollision(Collidable* other, Vector2 penetration) = 0;
         virtual ~Collidable() = default;
 
         //debug 

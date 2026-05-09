@@ -18,7 +18,7 @@ void Grid::RemoveDrop(Resource* drop) {
 	delete drop;
 }
 
-void Grid::SpawnDrops(ResourceDrop drop, int dropPickupRadius, GameContext& context) {
+void Grid::SpawnDrops(ResourceDrop drop) {
 
 	//add padding to spawn range so not so compact
 	int scatter = cellSize * 0.25;
@@ -33,7 +33,7 @@ void Grid::SpawnDrops(ResourceDrop drop, int dropPickupRadius, GameContext& cont
 	switch (drop.type) {
 	case(ResourceType::COIN):
 		//condense coins into gold if possible 
-		CondenseToGold(drop, dropPickupRadius, context);
+		CondenseToGold(drop);
 
 		tex = context.txm->LoadTexture(context.renderer, "../../assets/coin.png");
 		spr->Initialize(tex, 2195, 2195, 0, 0, drawSize, drawSize);
@@ -60,19 +60,27 @@ void Grid::SpawnDrops(ResourceDrop drop, int dropPickupRadius, GameContext& cont
 		Sprite* s = spr->Clone();
 		float fallTime = fallTimeGen(gen) * (2 / (pos.y / cellSize));//higher placed drops fall longer
 		r->Initialize(pos, Vector2(0, 0), s, fallTime, drop.type);
-		CollisionShape cs = CollisionShape::MakeCircle(dropPickupRadius);
+		CollisionShape cs = CollisionShape::MakeCircle(itemPickupRadius);
 		r->SetCollisionBound(cs);
 		UpdateDropOccupancy(r);
 	}
 }
 
-void Grid::CondenseToGold(ResourceDrop drop, int dropPickupRadius, GameContext& context) {
+void Grid::CondenseToGold(ResourceDrop drop) {
 	ResourceDrop d = drop;
 	d.amount /= 10;
 	d.type = ResourceType::GOLD;
-	SpawnDrops(d, dropPickupRadius, context);
+	SpawnDrops(d);
 }
 
 void Grid::UpdateDropOccupancy(Resource* drop) {
 	UpdateOccupancy(drop, &GridCell::AddDrop, &GridCell::RemoveDrop);
+}
+
+void Grid::ChangeItemPickupRadius(int amount) {
+	itemPickupRadius += amount;
+}
+
+int Grid::GetItemPickupRadius() {
+	return itemPickupRadius;
 }

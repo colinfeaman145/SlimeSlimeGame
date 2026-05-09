@@ -17,12 +17,14 @@ bool AttackCone::Initialize(Vector2 pos, AnimatedSprite* spr) {
 	CollisionShape cs = CollisionShape::MakeCone(radius, Vector2(1.0, 0.0), halfAngle);
 	SetCollisionBound(cs);
 	canCollide = false;
+	collideType = CollidableType::ATTACK_CONE;
 
 	swoosh = spr;
 	swoosh->SetPosition(pos);
 	swoosh->SetDrawLayer(RenderLayer::PARTICLE);
 	int arcWidth = (int)(2 * radius * sin(halfAngle));
 	swoosh->SetDrawSize(arcWidth, arcWidth);
+	calledAttack = false;
 
 	return true;
 }
@@ -32,10 +34,10 @@ void AttackCone::Draw(Renderer* renderer) {
 	Collidable::Draw(renderer, {100, 100, 100}, 100, RenderLayer::ATTACK_CONE);
 }
 
-void AttackCone::Process(float deltaTime, GameContext& context) {
+void AttackCone::Process(float deltaTime) {
 	if (currentAttackTime > 0)
 		currentAttackTime -= deltaTime;
-	swoosh->Process(deltaTime, context);
+	swoosh->Process(deltaTime);
 }
 
 void AttackCone::SetTargetPosition(Vector2 target) {
@@ -61,8 +63,14 @@ bool AttackCone::CanAttack() {
 void AttackCone::PlayAttack() {
 	if (!CanAttack()) return;
 	currentAttackTime = attackCooldown;
+	calledAttack = true;
+	context.am->PlaySound("SwordSwing", "Default", { position.x, 100, position.y }, { 0, 0, 0 }, Vector2(0.85, 1.15));
 	swoosh->Restart();
 	swoosh->Animate();
+}
+
+void AttackCone::ClearAttack() {
+	calledAttack = false;
 }
 
 void AttackCone::IncreaseAttackDamage(int damage) {
@@ -79,32 +87,32 @@ void AttackCone::IncreaseWidth(float increaseAmount) {
 	swoosh->SetDrawSize(arcWidth, swoosh->GetHeight());
 }
 
-void AttackCone::ProcessDropQueue(int dropPickupRadius, GameContext& context) {
-	for (ResourceDrop drop : dropQueue) {
-		context.grid->SpawnDrops(drop, dropPickupRadius, context);
-	}
-	dropQueue.clear();
+float AttackCone::CalculateAttackDamage(float dist) {
+	float damageScaler = (dist / radius) * 1.5; //do up to 1.5 more damage depending on distance
+	float damage = attackDamage * damageScaler;
+	return min(damage, attackDamage * 0.5f); //do no less than half of attack
 }
 
-void AttackCone::HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) {
-	if (Enemy* n = dynamic_cast<Enemy*>(other)) {//if its an enemy
-		n->Damage(attackDamage);
-		//knockback
-	}
-	if (Nature* n = dynamic_cast<Nature*>(other)) {//if its nature
-		if (!n->GetSprite()) return;//return if already deleted
+void AttackCone::HandleCollision(Collidable* other, Vector2 penetration) {
 
-		if(DEBUGMODE) printf("Damage %d, Health %d / %d\n", attackDamage, n->GetHealth(), n->GetMaxHealth());
-		n->Nature::Damage(attackDamage);
-		if (n->GetHealth() <= 0) {//if attack broke structure
-			//spawn drops
-			ResourceDrop drops = ResourceDrop();
-			drops.amount = n->GetDropAmount();
-			drops.type = n->GetDropType();
-			drops.spawnerPosition = n->GetPosition();
-			drops.spawnerSize = n->GetSprite()->GetDrawSize();
-			dropQueue.push_back(drops);
-			n->Break();
+	if(calledAttack){//only deal damage when cone calls resolveCollision, not when Enemy does
+		if (other->GetCollidableType() == CollidableType::ENEMY) {//if its an enemy
+			Enemy* e = static_cast<Enemy*>(other);
+			if (DEBUGMODE) printf("Damage %d, Health %d / %d\n", attackDamage, e->GetHealth(), e->GetMaxHealth());
+
+			if (!e->IsAlive()) return;//dont allow hit when dead
+			float dist = Distance(e->GetPosition(), position);
+			e->Damage(CalculateAttackDamage(dist));
+		}
+
+		if (other->GetCollidableType() == CollidableType::NATURE) {//if its nature
+			Nature* n = static_cast<Nature*>(other);
+			//if (DEBUGMODE) printf("Damage %d, Health %d / %d\n", attackDamage, n->GetHealth(), n->GetMaxHealth());
+			if (!n->GetSprite()) return;//return if already deleted
+
+			float dist = Distance(n->GetPosition(), position);
+			n->Nature::Damage(CalculateAttackDamage(dist));
+			if(!n->IsAlive()) n->SpawnDrops();//only spawn drops when player breaks
 		}
 	}
 }

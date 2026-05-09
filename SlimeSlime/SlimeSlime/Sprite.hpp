@@ -14,7 +14,7 @@ public:
 
     bool Initialize(SDL_Texture* tex, int srcWidth, int srcHeight, int srcX, int srcY, int drawWidth, int drawHeight, RenderLayer l = RenderLayer::OBJECTS, int sl = 0);
 
-    virtual void Process(float deltaTime, GameContext& context);
+    virtual void Process(float deltaTime);
     virtual void Draw(Renderer* renderer);
 
     void SetPosition(int x, int y);
@@ -25,6 +25,7 @@ public:
     void SetDrawSize(int w, int h);
     void SetDrawLayer(RenderLayer l, int sl = 0);
     void SetIsFlashing(bool flash);
+    void SetFlip(bool flipH);
     int GetWidth() const { return dstRect.w; };
     int GetHeight() const { return dstRect.h; };
     Vector2 GetPosition() const { return Vector2(dstRect.x, dstRect.y); }
@@ -40,6 +41,7 @@ protected:
     float rotation;
     RenderLayer layer;
     int subLayer;
+    SDL_RendererFlip flip;
 
     SDL_Rect srcRect;
     SDL_Rect dstRect;

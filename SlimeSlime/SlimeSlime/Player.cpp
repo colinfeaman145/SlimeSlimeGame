@@ -2,16 +2,16 @@
 #include "Resource.hpp"
 #include "Grid.hpp"
 
-void Player::Initialize(Vector2 pos, int pullRadius, Vector2 vel, Sprite* spr) {
+void Player::Initialize(Vector2 pos, int pullRadius, Vector2 vel, AnimatedSprite* spr) {
 	Entity::Initialize(pos, vel, spr);
-	itemPullRadius = pullRadius;
 	itemPickupRadius = GetRadius() * 1.5;
+	context.grid->ChangeItemPickupRadius(pullRadius);
 	SetCanCollide(true);
+	collideType = CollidableType::PLAYER;
 
 	coins = 0;
 	wood = 100;
 	stone = 0;
-
 
 	Vector2 size = sprite->GetDrawSize();
 	healthBar = new PercentageBar(health, maxHealth, size.x * 1.1, size.y * 0.2, { 255, 50, 50 }, { 150, 50, 50 });
@@ -28,8 +28,21 @@ void Player::Draw(Renderer* renderer) {
 		cooldownBar->Draw(renderer);
 }
 
-void Player::Process(float deltaTime, GameContext& context) {
-	Entity::Process(deltaTime, context);
+void Player::Process(float deltaTime) {
+	Entity::Process(deltaTime);
+	context.am->Process(position, deltaTime);//listen for audio
+
+	//update sprite
+	if (sprite) {
+		AnimatedSprite* s = static_cast<AnimatedSprite*>(sprite);
+		if (moving) {
+			if(!s->IsAnimating()) s->Animate();
+			moving = false;
+		}
+		else {
+			s->Pause();
+		}
+	}
 	
 	//process attackCone & cooldown bar
 	if (attackCone) {
@@ -38,10 +51,12 @@ void Player::Process(float deltaTime, GameContext& context) {
 		cooldownBar->SetValues(cooldownTime - curr, cooldownTime);
 		cooldownBar->SetPosition(position.x, position.y);
 
-		attackCone->ProcessDropQueue(itemPullRadius, context);
 		attackCone->SetPosition(GetPosition());//follow player
 		attackCone->SetTargetPosition(context.im->GetMouseWorldPosition(context.renderer->cam));//cone points to mouse
-		attackCone->Process(deltaTime, context);
+		attackCone->Process(deltaTime);
+
+		//set character to rotate with attack cone
+		sprite->SetRotation(attackCone->GetSprite()->GetRotation());
 	}
 }
 
@@ -53,7 +68,7 @@ void Player::SetAttackCone(AttackCone* ac) {
 	Vector2 size = sprite->GetDrawSize();
 	float curr = attackCone->GetCurrentAttackCooldownTime();
 	float cooldownTime = attackCone->GetCooldownTime();
-	cooldownBar = new PercentageBar(cooldownTime - curr, cooldownTime, size.x * 1.1, size.y * 0.2, { 50, 50, 255 }, { 50, 50, 150 });
+	cooldownBar = new PercentageBar(cooldownTime - curr, cooldownTime, size.x * 1.1, size.y * 0.2, { 50, 50, 255 }, { 0, 0, 0 });
 	cooldownBar->SetPosition(position.x, position.y);
 	cooldownBar->SetOffset(-(size.x * 0.05), (size.y * 0.95));
 }
@@ -98,14 +113,50 @@ bool Player::HasEnoughStone(int amount) {
 	return stone >= amount;
 }
 
-void Player::HandleCollision(Collidable* other, Vector2 penetration, GameContext& context) {
-	if (Resource* r = dynamic_cast<Resource*>(other)) {//if its a resource
+bool Player::CanMakeRecipe(unordered_map<ResourceType, int> recipe) {
+	bool canMake = true;
+	for (auto r : recipe) {
+		switch (r.first) {
+			case(ResourceType::WOOD):
+				canMake &= HasEnoughWood(r.second);
+				break;
+			case(ResourceType::STONE):
+				canMake &= HasEnoughStone(r.second);
+				break;
+			case(ResourceType::COIN):
+				canMake &= HasEnoughCoins(r.second);
+				break;
+		}
+	}
+	return canMake;
+}
+
+void Player::RemoveRecipeCost(unordered_map<ResourceType, int> recipe) {
+	if (!CanMakeRecipe(recipe)) return;
+	for (auto r : recipe) {
+		switch (r.first) {
+			case(ResourceType::WOOD):
+				RemoveWood(r.second);
+				break;
+			case(ResourceType::STONE):
+				RemoveStone(r.second);
+				break;
+			case(ResourceType::COIN):
+				RemoveCoins(r.second);
+				break;
+		}
+	}
+}
+
+void Player::HandleCollision(Collidable* other, Vector2 penetration) {
+	if (other->GetCollidableType() == CollidableType::RESOURCE) {//if its a resource
+		Resource* r = static_cast<Resource*>(other);
 		//calculate resource distance
 		Vector2 rPos = r->GetPosition();
 		float dist = Distance(rPos, GetPosition());
 		//if close enough delete and add to supply
 		if (dist <= itemPickupRadius) {
-			HandleResourcePickup(r, context);
+			HandleResourcePickup(r);
 		}
 	}
 	if (other->CanCollide()) {
@@ -113,7 +164,8 @@ void Player::HandleCollision(Collidable* other, Vector2 penetration, GameContext
 	}
 }
 
-void Player::HandleResourcePickup(Resource* r, GameContext& context) {
+void Player::HandleResourcePickup(Resource* r) {
+	context.am->PlaySound("Pickup", "Default", { position.x, 100, position.y }, { 0, 0, 0 }, Vector2(0.85, 1.15));
 	switch (r->GetResourceType()) {
 		case(ResourceType::COIN):
 			coins++;
