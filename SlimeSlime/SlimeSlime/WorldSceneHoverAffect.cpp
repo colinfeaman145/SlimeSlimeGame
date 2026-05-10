@@ -5,23 +5,49 @@ void WorldScene::UpdateCurrentHoveredCell(bool canAfford) {
     if (!buildMode) {//if no longer building, remove holograms, reset, end
         RemoveHoverEffect(currentHoveredCellCoords);
         currentHoveredCellCoords = { -1, -1 };
+        lastHoveredStructure = -1;
         return;
     }
 
     Vector2 pos = context.im->GetMouseWorldPosition(context.renderer->cam);
-    GridCell* cell = context.grid->GetCell(context.grid->WorldToGrid(pos));
+    GridCoord newCoord = context.grid->WorldToGrid(pos);
+    GridCell* cell = context.grid->GetCell(newCoord);
+
     if (!cell) {
         RemoveHoverEffect(currentHoveredCellCoords);
         currentHoveredCellCoords = { -1, -1 };
+        lastHoveredStructure = -1;
         return;
     }
 
-    if (currentHoveredCellCoords != context.grid->WorldToGrid(pos)) {//if on a new cell
+    if (currentHoveredCellCoords != newCoord || lastHoveredStructure != currentStructure) {//if on a new cell — place hologram
         RemoveHoverEffect(currentHoveredCellCoords);
-        currentHoveredCellCoords = context.grid->WorldToGrid(pos);
+        currentHoveredCellCoords = newCoord;
+        ApplyHoverEffect(cell, canAfford);
     }
+    else {//same cell — just recolor, no place/remove
+        UpdateHoverColor(cell, canAfford);
+    }
+}
 
-    ApplyHoverEffect(cell, canAfford);
+void WorldScene::UpdateHoverColor(GridCell* cell, bool canAfford) {
+    color c = canAfford ? color{ 100, 100, 255 } : color{ 255, 100, 100 };
+    int alpha = canAfford ? 100 : 200;
+
+    //walls
+    if (currentStructure == 1 || currentStructure == 2) {
+        WallDirection dir = currentStructure == 1 ? WallDirection::NORTH : WallDirection::WEST;
+        if (cell->HasWall(dir)) {
+            cell->GetWall(dir)->GetSprite()->SetColor(c);
+            cell->GetWall(dir)->GetSprite()->SetAlpha(alpha);
+        }
+    }
+    else {//structures
+        if (cell->HasStructure()) {
+            cell->GetStructure()->GetSprite()->SetColor(c);
+            cell->GetStructure()->GetSprite()->SetAlpha(alpha);
+        }
+    }
 }
 
 void WorldScene::ApplyHoverEffect(GridCell* cell, bool canAfford) {
@@ -64,8 +90,6 @@ void WorldScene::ApplyHoverEffect(GridCell* cell, bool canAfford) {
             cell->GetStructure()->GetSprite()->SetAlpha(100);
         }
     }
-
-
 
     return;
 }

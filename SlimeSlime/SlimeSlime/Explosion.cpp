@@ -7,6 +7,9 @@
 #include "Grid.hpp"
 #include "ExplosionTrap.hpp"
 
+Explosion::Explosion(const Explosion& other) 
+	: Explosion(other.radius * 2, other.damage){}
+
 Explosion::Explosion(int size, int dam) {
 
 	AnimatedSprite* s = new AnimatedSprite();

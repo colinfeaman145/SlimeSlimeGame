@@ -5,6 +5,7 @@
 
 class FireTrap : public Trap {
 	public:
+		FireTrap() = default;
 		FireTrap* Clone() const override { return new FireTrap(*this); }
 		void Initialize();
 		void ActivateTrapAbility(Enemy* e) override;

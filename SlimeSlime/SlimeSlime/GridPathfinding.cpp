@@ -96,9 +96,16 @@ void Grid::ComputeFlowField(GridCoord target, int radius) {
     field.target = target;
     field.dirty = false;
     field.computedRadius = radius;
-    field.Reset(gridWidth, gridHeight);
-
+    
     if (!IsValidCoord(target)) return;
+
+    if (radius == INT_MAX) {
+        field.Reset(gridWidth, gridHeight); //full reset on first pass
+    }
+    else {
+        field.ResetRadius(target, radius, gridWidth, gridHeight); //only reset within radius
+    }
+
 
     RunDijkstra(target, field, radius);
     SmoothFlowField(field);
@@ -165,8 +172,15 @@ void Grid::SmoothFlowField(FlowField& field) {
 
     vector<Vector2> original = field.vectors;//take snapshot
 
-    for (int row = 0; row < gridHeight; ++row) {
-        for (int col = 0; col < gridWidth; ++col) {
+    //only smooth modified cells
+    int radius = field.computedRadius;
+    int minCol = max(0, field.target.col - radius);
+    int maxCol = min(gridWidth - 1, field.target.col + radius);
+    int minRow = max(0, field.target.row - radius);
+    int maxRow = min(gridHeight - 1, field.target.row + radius);
+
+    for (int row = minRow; row <= maxRow; ++row) {
+        for (int col = minCol; col <= maxCol; ++col) {
             int cur1DIndex = index(col, row);
             if (!field.reached[cur1DIndex]) continue;
 

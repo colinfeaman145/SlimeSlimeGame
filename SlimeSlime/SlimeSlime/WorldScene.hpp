@@ -29,7 +29,7 @@ public:
     void ChangeStructure(int s);
     void ChangeMaterial();
     void PlaceStructure(bool isHologram = false);
-    void RemoveStructure();
+    void RemoveStructure(bool couldntAfford = false);
     Structure* GetCurrentStructure();
     int GetCurrentStructureNumber() const { return currentStructure; }
     Entity* GetPlayer();
@@ -37,6 +37,7 @@ public:
     void Attack();
 
     void UpdateCurrentHoveredCell(bool canAfford);
+    void UpdateHoverColor(GridCell* cell, bool canAfford);
     void ApplyHoverEffect(GridCell* cell, bool canAfford);
     void RemoveHoverEffect(GridCoord coord);
 
@@ -48,11 +49,17 @@ private:
     Player* player;
     EnemySpawner* spawner;
     GridCoord currentHoveredCellCoords;
+    int lastHoveredStructure;
     Structure* st;
     Structure* wallHwood;
     Structure* wallVwood;
     Structure* wallHstone;
     Structure* wallVstone;
+    PushTrap* pushTrap;
+    SpikeTrap* spikeTrap;
+    FireTrap* fireTrap;
+    FreezeTrap* freezeTrap;
+    ExplosionTrap* explosionTrap;
     int currentStructure;
     bool isStone;
     int pushTrapDirection;

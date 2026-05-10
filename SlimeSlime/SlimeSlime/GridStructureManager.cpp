@@ -9,10 +9,11 @@ bool Grid::CanPlaceStructure(GridCoord coord) const {
 bool Grid::PlaceStructure(Structure* structure, GridCoord coord) {
     if (!CanPlaceStructure(coord)) return false;
 
-    structure->GetSprite()->SetDrawSize(cellSize, cellSize);
-    cells[coord.row][coord.col]->AddStructure(structure);
-    structure->SetPosition(GridToWorld(coord));
-    structure->GetSprite()->SetDrawLayer(RenderLayer::STRUCTURES);
+    Structure* s = structure->Clone();
+    s->GetSprite()->SetDrawSize(cellSize, cellSize);
+    cells[coord.row][coord.col]->AddStructure(s);
+    s->SetPosition(GridToWorld(coord));
+    s->GetSprite()->SetDrawLayer(RenderLayer::STRUCTURES);
 
     vector<Collidable*> collidables = GetNearbyCollidables(coord, 2);
     for (Collidable* c : collidables) {//remove folaige where wall placed
@@ -46,4 +47,14 @@ bool Grid::RemoveStructure(Structure* structure) {
         }
     }
     return false;
+}
+
+vector<Structure*> Grid::GetNearbyStructures(GridCoord coord, int radius) {
+    vector<Structure*> result;
+    for (GridCell* cell : GetNeighbourCells(coord, radius)) {
+        result.push_back(cell->GetStructure());
+        result.push_back(cell->GetWall(WallDirection::NORTH));
+        result.push_back(cell->GetWall(WallDirection::WEST));
+    }
+    return result;
 }

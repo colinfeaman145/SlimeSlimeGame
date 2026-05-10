@@ -12,6 +12,7 @@ bool WorldScene::Initialize() {
     isStone = false;
     buildMode = false;
     currentHoveredCellCoords = { -1, -1 };
+    lastHoveredStructure = -1;
     spawnCooldown = 2.0f;
     currentSpawnTime = spawnCooldown;
 
@@ -113,6 +114,18 @@ bool WorldScene::Initialize() {
     wallVwood->SetRecipe(recWood);
     wallHstone->SetRecipe(recStone);
     wallVstone->SetRecipe(recStone);
+
+    //make traps
+    pushTrap = new PushTrap();
+    pushTrap->Initialize(0);
+    spikeTrap = new SpikeTrap();
+    spikeTrap->Initialize();
+    fireTrap = new FireTrap();
+    fireTrap->Initialize();
+    freezeTrap = new FreezeTrap();
+    freezeTrap->Initialize();
+    explosionTrap = new ExplosionTrap();
+    explosionTrap->Initialize();
 
     //make player
     player = new Player();
@@ -275,7 +288,7 @@ void WorldScene::PlaceStructure(bool isHologram) {
     if (!s) return;//something fucked up
     auto recipe = s->GetRecipe();
     if (!player->CanMakeRecipe(recipe)) {//cant make recipe
-        RemoveStructure();
+        RemoveStructure(true);
         context.am->PlaySound("CantPlace", "Default", { player->GetPosition().x, 100, player->GetPosition().y }, { 0, 0, 0 }, Vector2(1, 1));
         return;
     }
@@ -288,7 +301,7 @@ void WorldScene::PlaceStructure(bool isHologram) {
 }
 
 //only called by player, never hologram
-void WorldScene::RemoveStructure() {
+void WorldScene::RemoveStructure(bool couldntAfford) {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
     GridCoord coord = context.grid->WorldToGrid(vec2);
@@ -304,7 +317,7 @@ void WorldScene::RemoveStructure() {
         structRemoved = context.grid->RemoveStructure(coord);
     }
 
-    if(structRemoved)
+    if(structRemoved && !couldntAfford)
         context.am->PlaySound("BreakStructure", "Default", { player->GetPosition().x, 100, player->GetPosition().y}, {0, 0, 0}, Vector2(0.85, 1.15));
     context.grid->InvalidateFlowFieldsNear(coord, 10);
 }
@@ -319,25 +332,16 @@ Structure* WorldScene::GetCurrentStructure() {
         case(3):
             return nullptr;
         case(4):
-            s =  new PushTrap();
-            static_cast<PushTrap*>(s)->Initialize(pushTrapDirection);
-            return s;
+            pushTrap->SetDirection(pushTrapDirection);
+            return pushTrap;
         case(5):
-            s = new SpikeTrap();
-            s->Initialize();
-            return s;
+            return spikeTrap;
         case(6):
-            s = new FireTrap();
-            s->Initialize();
-            return s;
+            return fireTrap;
         case(7):
-            s = new FreezeTrap();
-            s->Initialize();
-            return s;
+            return freezeTrap;
         case(8):
-            s = new ExplosionTrap();
-            s->Initialize();
-            return s;
+            return explosionTrap;
     }
     return nullptr;
 }

@@ -5,6 +5,7 @@
 
 class SpikeTrap : public Trap {
 	public:
+		SpikeTrap() = default;
 		SpikeTrap* Clone() const override { return new SpikeTrap(*this); }
 		void Initialize();
 		void ActivateTrapAbility(Enemy* e) override;

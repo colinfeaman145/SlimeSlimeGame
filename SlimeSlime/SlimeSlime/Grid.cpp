@@ -175,28 +175,30 @@ vector<GridCell*> Grid::FindEntityCells(Entity* entity) {
 
 //NEIGHBOR CHECKING
 //returns cells in a radius of cell at input coordinates
-vector<GridCell*> Grid::GetNeighbourCells(GridCoord coord, int radius) {
-    vector<GridCell*> result;
+vector<GridCell*>& Grid::GetNeighbourCells(GridCoord coord, int radius) {
+    neighborCellsScratch.clear();
 
     for (int row = coord.row - radius; row <= coord.row + radius; ++row)
         for (int col = coord.col - radius; col <= coord.col + radius; ++col)
             if (GridCell* cell = GetCell(col, row))
-                result.push_back(cell);
+                neighborCellsScratch.push_back(cell);
 
-    return result;
+    return neighborCellsScratch;
 }
 
 //include 1 instance of all collidables in reachable cells
-vector<Collidable*> Grid::GetNearbyCollidables(GridCoord coord, int radius) {
-    vector<Collidable*> result;
-    unordered_set<Collidable*> seen;
+vector<Collidable*>& Grid::GetNearbyCollidables(GridCoord coord, int radius) {
+
+    collidableScratch.clear();
+    collidableSeen.clear();
+
     for (GridCell* cell : GetNeighbourCells(coord, radius)) {
         for (Collidable* c : cell->GetCollidables()) {
-            if (seen.insert(c).second) //insert returns false if already present
-                result.push_back(c);
+            if (collidableSeen.insert(c).second) //returns false if alrady present
+                collidableScratch.push_back(c);
         }
     }
-    return result;
+    return collidableScratch;
 }
 
 //check if entity collides with anything. Act if they do

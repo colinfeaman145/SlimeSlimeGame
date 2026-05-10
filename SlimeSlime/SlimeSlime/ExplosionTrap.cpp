@@ -1,6 +1,10 @@
 #include "ExplosionTrap.hpp"
 #include "Grid.hpp"
 
+ExplosionTrap::ExplosionTrap(const ExplosionTrap& other) : Trap(other) {
+	explosion = new Explosion(*other.explosion);
+}
+
 ExplosionTrap::~ExplosionTrap() {
 	if (explosion) context.grid->RemoveOther(explosion);
 	delete explosion;

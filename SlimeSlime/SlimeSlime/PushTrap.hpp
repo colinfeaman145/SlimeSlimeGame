@@ -12,13 +12,16 @@ enum class PushTrapDirection {
 
 class PushTrap : public Trap {
 	public:
+		PushTrap() = default;
+		PushTrap(const PushTrap& other);
 		PushTrap* Clone() const override { return new PushTrap(*this); }
 		void Initialize(int dir);
 		void ActivateTrapAbility(Enemy* e) override;
 
+		void SetDirection(int dir);
+
 		void HandleCollision(Collidable* other, Vector2 penetration) override;
 	private:
-		void SetDirection(int dir);
 		PushTrapDirection direction;
 };
 

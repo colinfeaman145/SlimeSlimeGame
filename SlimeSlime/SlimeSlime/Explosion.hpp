@@ -5,6 +5,7 @@
 
 class Explosion : public Entity {
 	public:
+		Explosion(const Explosion& other);
 		Explosion(int size, int dam);
 		void Process(float deltaTime) override;
 		void Explode();

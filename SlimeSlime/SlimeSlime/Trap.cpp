@@ -1,6 +1,18 @@
 #include "Trap.hpp"
 #include "Grid.hpp"
 
+Trap::Trap(const Trap& other) : Structure(other) {
+	activationDelay = other.activationDelay;
+	cooldown = other.cooldown;
+	currentTimer = other.currentTimer;
+	damage = other.damage;
+	activated = other.activated;
+	abilityActivated = other.abilityActivated;
+	activateAbility = other.activateAbility;
+	particles = other.particles;
+	cooldownBar = new PercentageBar(*other.cooldownBar);
+}
+
 void Trap::Initialize() {
 	int size = context.grid->GetCellSize();
 

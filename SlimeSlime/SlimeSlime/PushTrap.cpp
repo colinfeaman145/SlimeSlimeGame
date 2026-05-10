@@ -1,6 +1,10 @@
 #include "PushTrap.hpp"
 #include "Grid.hpp"
 
+PushTrap::PushTrap(const PushTrap& other) : Trap(other){
+	direction = other.direction;
+}
+
 void PushTrap::Initialize(int dir) {
 	int size = context.grid->GetCellSize();
 

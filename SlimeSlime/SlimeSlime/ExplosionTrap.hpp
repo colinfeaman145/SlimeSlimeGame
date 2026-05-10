@@ -6,7 +6,9 @@
 
 class ExplosionTrap : public Trap {
 	public:
+		ExplosionTrap() = default;
 		~ExplosionTrap();
+		ExplosionTrap(const ExplosionTrap& other);
 		ExplosionTrap* Clone() const override { return new ExplosionTrap(*this); }
 		void Initialize();
 		void Draw(Renderer* renderer) override;

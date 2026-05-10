@@ -5,6 +5,7 @@
 
 class PercentageBar {
 public:
+    PercentageBar(const PercentageBar& other);
     PercentageBar(float current, float max, int w, int h, color fillColor, color outlineColor);
 
     void SetValues(float current, float max);

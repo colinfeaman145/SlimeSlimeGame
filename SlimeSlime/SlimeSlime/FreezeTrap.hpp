@@ -5,6 +5,7 @@
 
 class FreezeTrap : public Trap {
 	public:
+		FreezeTrap() = default;
 		FreezeTrap* Clone() const override { return new FreezeTrap(*this); }
 		void Initialize();
 		void ActivateTrapAbility(Enemy* e) override;

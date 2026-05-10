@@ -37,6 +37,7 @@ class Enemy : public Entity {
 		void SetExplosion();
 		void TryExplode();
 		void SetFrozen(float duration);
+		bool IsFrozen();
 		float GetAttackCooldown();
 		ResourceType GetDropType() const override;
 		int GetDropAmount() const override;

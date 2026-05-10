@@ -170,8 +170,7 @@ void EnemySpawner::Process(float deltaTime) {
 		Enemy* e = *it;
 		if (e->IsAlive()) {
 			e->Process(deltaTime);
-			context.grid->UpdateEnemyOccupancy(e);
-			context.grid->ResolveCollisions(e);
+			if(!e->IsFrozen())context.grid->ResolveCollisions(e);
 			++it;
 		}
 		else {
@@ -184,9 +183,6 @@ void EnemySpawner::Process(float deltaTime) {
 			context.grid->RemoveEnemy(e);
 		}
 	}
-	//safe to modify vector
-	for (Enemy* e : enemies)
-		context.grid->UpdateEnemyOccupancy(e);
 }
 
 void EnemySpawner::SpawnEnemies(GameContext& context) {
@@ -210,6 +206,7 @@ void EnemySpawner::SpawnEnemies(GameContext& context) {
 	for (int i = 0; i < numSpawnsGen(gen); i++) {
 		Enemy* e = GetRandomEnemy(pool, progress, cellSize);
 		e->SetPosition(Vector2(xGen(gen), yGen(gen)));
+		e->SetTarget(e->FindNewTarget());
 		enemies.push_back(e);
 	}
 }

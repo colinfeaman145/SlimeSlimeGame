@@ -1,5 +1,18 @@
 #include "PercentageBar.hpp"
 
+PercentageBar::PercentageBar(const PercentageBar& other) {
+    current = other.current;
+    max = other.max;
+    w = other.w;
+    h = other.h;
+    x = other.x;
+    y = other.y;
+    fillColor = other.fillColor;
+    outlineColor = other.outlineColor;
+    offsetX = other.offsetX;
+    offsetY = other.offsetY;
+}
+
 PercentageBar::PercentageBar(float current, float max, int w, int h, color fillColor, color outlineColor)
     : current(current), max(max), w(w), h(h), x(0), y(0)
     , fillColor(fillColor), outlineColor(outlineColor) {

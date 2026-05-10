@@ -8,6 +8,8 @@
 class Trap : public Structure {
 
 	public:
+		Trap() = default;
+		Trap(const Trap& other);
 		virtual void Initialize();
 		virtual void Draw(Renderer* renderer) override;
 		virtual void Process(float deltaTime) override;

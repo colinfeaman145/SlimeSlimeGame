@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
 #include "Vector2.hpp"
 #include "Entity.hpp"
@@ -32,8 +33,8 @@ public:
     Vector2 SnapToGrid(Vector2 worldPos) const; //snaps a world position to cell origin
 
     vector<GridCell*> FindEntityCells(Entity* entity);
-    vector<GridCell*> GetNeighbourCells(GridCoord coord, int radius);
-    vector<Collidable*> GetNearbyCollidables(GridCoord coord, int radius);
+    vector<GridCell*>& GetNeighbourCells(GridCoord coord, int radius);
+    vector<Collidable*>& GetNearbyCollidables(GridCoord coord, int radius);
 
     template<typename T>
     void UpdateOccupancy(T* entity, void (GridCell::*addFunc)(T*), void (GridCell::*removeFunc)(T*));
@@ -57,6 +58,7 @@ public:
     bool PlaceStructure(Structure* structure, GridCoord coord);
     bool RemoveStructure(GridCoord coord);
     bool RemoveStructure(Structure* structure);
+    vector<Structure*> GetNearbyStructures(GridCoord coord, int radius);
 
     //Walls
     bool CanPlaceWall(GridCoord coord, WallDirection dir);
@@ -80,6 +82,7 @@ public:
     //Other
     void AddOther(Entity* e);
     void RemoveOther(Entity* e);
+    Player* GetPlayer();
 
     //Atlas
     GridCoord FindAtlas();
@@ -108,6 +111,12 @@ private:
     Structure* atlas;
 
     unordered_map<GridCoord, FlowField, GridCoordHash, GridCoordEqual> flowFields;
+
+    //memory savers
+    vector<GridCell*> neighborCellsScratch;
+    vector<Collidable*> collidableScratch;
+    unordered_set<Collidable*> collidableSeen;
+    Player* playerCache;
 };
 
 

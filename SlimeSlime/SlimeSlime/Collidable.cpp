@@ -2,7 +2,8 @@
 #include "Enemy.hpp"
 
 Collidable::~Collidable() {
-    for (Enemy* t : targetedBy)
+    vector<Enemy*> copy = targetedBy;
+    for (Enemy* t : copy)
         t->SetTarget(nullptr);
     targetedBy.clear();
 }
