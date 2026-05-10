@@ -115,6 +115,7 @@ private:
     //memory savers
     vector<GridCell*> neighborCellsScratch;
     vector<Collidable*> collidableScratch;
+    vector<Vector2> fieldVectorCopyScratch;
     unordered_set<Collidable*> collidableSeen;
     Player* playerCache;
 };

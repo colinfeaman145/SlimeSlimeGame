@@ -35,6 +35,7 @@ class Enemy : public Entity {
 		bool IsDying();
 		void SetAttackCooldown(float atckCool);
 		void SetExplosion();
+		Explosion* GetExplosion();
 		void TryExplode();
 		void SetFrozen(float duration);
 		bool IsFrozen();

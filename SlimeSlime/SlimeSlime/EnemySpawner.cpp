@@ -4,7 +4,7 @@
 void EnemySpawner::Initialize(const string& enemyStats, const string& spawnPools) {
 	InitEnemyStats(enemyStats);
 	InitSpawnPools(spawnPools);
-	InitSprites(context);
+	InitSprites();
 }
 
 void EnemySpawner::InitEnemyStats(const string& enemyStatsFile) {
@@ -79,7 +79,7 @@ void EnemySpawner::InitSpawnPools(const string& spawnPoolsFile) {
 	file.close();
 }
 
-void EnemySpawner::InitSprites(GameContext& context) {
+void EnemySpawner::InitSprites() {
 
 	int totalRows = 7;
 
@@ -170,12 +170,13 @@ void EnemySpawner::Process(float deltaTime) {
 		Enemy* e = *it;
 		if (e->IsAlive()) {
 			e->Process(deltaTime);
-			if(!e->IsFrozen())context.grid->ResolveCollisions(e);
+			if(!e->IsFrozen()) context.grid->ResolveCollisions(e);
 			++it;
 		}
 		else {
 			if (e->IsDying()) {//if still animating death, skip for now
 				e->GetSprite()->Process(deltaTime);//process after death so animation plays
+				if (e->GetExplosion()) e->GetExplosion()->Process(deltaTime);
 				++it;
 				continue;
 			}
@@ -185,16 +186,18 @@ void EnemySpawner::Process(float deltaTime) {
 	}
 }
 
-void EnemySpawner::SpawnEnemies(GameContext& context) {
+void EnemySpawner::SpawnEnemies() {
 
-	if (enemies.size() > 200) return;
+	if (enemies.size() > min((context.gameProgress + 1) * 50, 300.0f)) return;
 
 	//get spawn pool
-	float progress = context.gameProgress + 5;
+	float progress = context.gameProgress + 12;
 	SpawnPool pool;
-	for (SpawnPool s : spawnPools) {
-		if (s.min <= progress && progress < s.max)
+	for (const SpawnPool& s : spawnPools) {
+		if (s.min <= progress && progress < s.max) {
 			pool = s;
+			break;
+		}
 	}
 
 	//give padding to spawn bounds so enemy doesnt get lost outside grid
@@ -230,6 +233,8 @@ Enemy* EnemySpawner::GetRandomEnemy(SpawnPool pool, float gameProg, int cellSize
 
 	e->Initialize(Vector2(), moving.at(type), 15 ,targetRadius, atlasTarget, playerTarget);
 	e->SetType(type);
+	e->SetCollisionBound(CollisionShape::MakeCircle(e->GetRadius() * 0.75));//slime sprite has a bit of white space
+	e->SetExplosion(); //returns if not needed
 	e->SetMovementSpeed(moveSpeed.at(type)(gen) * ((scale * 0.5) + 1));
 	//e->SetMovementSpeed(200);
 	e->SetHealth(health.at(type)(gen) * scale);

@@ -22,11 +22,11 @@ class EnemySpawner : public Element
 		void Initialize(const string& enemyStats, const string& spawnPools);
 		void InitEnemyStats(const string& enemyStats);
 		void InitSpawnPools(const string& spawnPools);
-		void InitSprites(GameContext& context);
+		void InitSprites();
 		void Draw(Renderer* renderer) override;
 		void Process(float deltaTime) override;
 
-		void SpawnEnemies(GameContext& context);
+		void SpawnEnemies();
 		Enemy* GetRandomEnemy(SpawnPool pool, float gameProg, int cellSize);
 		EnemyType GetRandomEnemyType(SpawnPool pool);
 		EnemyType StringToEnemyType(const string& str);

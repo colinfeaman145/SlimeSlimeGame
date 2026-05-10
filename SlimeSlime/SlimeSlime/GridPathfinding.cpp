@@ -170,7 +170,8 @@ void Grid::RunDijkstra(GridCoord target, FlowField& field, int radius) {
 //this function smooths vectors to take a less robotic path
 void Grid::SmoothFlowField(FlowField& field) {
 
-    vector<Vector2> original = field.vectors;//take snapshot
+    fieldVectorCopyScratch.clear();
+    fieldVectorCopyScratch = field.vectors;//take snapshot
 
     //only smooth modified cells
     int radius = field.computedRadius;
@@ -184,7 +185,7 @@ void Grid::SmoothFlowField(FlowField& field) {
             int cur1DIndex = index(col, row);
             if (!field.reached[cur1DIndex]) continue;
 
-            Vector2 myVec = original[cur1DIndex];
+            Vector2 myVec = fieldVectorCopyScratch[cur1DIndex];
             int nextCol = col + (int)roundf(myVec.x);
             int nextRow = row + (int)roundf(myVec.y);
 
@@ -195,7 +196,7 @@ void Grid::SmoothFlowField(FlowField& field) {
             if (!field.reached[next1DIndex]) continue;
 
             //smoothed, combined vector between two cells
-            Vector2 blended = (myVec + original[next1DIndex]).Normalized();
+            Vector2 blended = (myVec + fieldVectorCopyScratch[next1DIndex]).Normalized();
 
             //check if the blended direction would cross a wall from this cell.
             //sample one step in the blended direction and test that edge.

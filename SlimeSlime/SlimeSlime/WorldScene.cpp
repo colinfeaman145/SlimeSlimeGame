@@ -215,7 +215,7 @@ void WorldScene::Process(float deltaTime) {
 
     //spawn enemies
     if (currentSpawnTime < 0) {
-        spawner->SpawnEnemies(context);
+        spawner->SpawnEnemies();
         currentSpawnTime = spawnCooldown;
     }
 

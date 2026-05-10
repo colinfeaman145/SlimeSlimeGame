@@ -136,7 +136,9 @@
     <ClCompile Include="GridOtherManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyPathFinding.cpp" />
+    <ClCompile Include="EnemyPathFinding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatedSprite.hpp">

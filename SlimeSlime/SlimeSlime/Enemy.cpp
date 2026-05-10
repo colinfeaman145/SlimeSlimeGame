@@ -29,7 +29,6 @@ void Enemy::Initialize(Vector2 pos, AnimatedSprite* spr, float retarget, int tar
     framesSinceLastHone = 0;
     movementSpeed = 35;
     explosion = nullptr;
-    SetExplosion(); //returns if not needed
     //target and velocity defined in process on first pass
 }
 
@@ -51,7 +50,6 @@ void Enemy::Process(float deltaTime) {
 
     //standard process
     Entity::Process(deltaTime);
-    if (explosion) explosion->Process(deltaTime);
 
     if (frozenTime > 0) {
         SetFlash(true);
@@ -150,13 +148,16 @@ void Enemy::Damage(float amount) {
 }
 
 bool Enemy::IsDying() {
-    bool isDying = !alive;
+    if (alive) return false;
+
+    bool deathPlaying = sprite == death && death->IsAnimating();
+
     if (type == EnemyType::EXPLOSIVE) {
-        isDying &= static_cast<AnimatedSprite*>(explosion->GetSprite())->IsAnimating();
+        bool explosionPlaying = static_cast<AnimatedSprite*>(explosion->GetSprite())->IsAnimating();
+        return deathPlaying || explosionPlaying; //kill fully only when both are done
     }
-    isDying &= sprite == death;
-    isDying &= death->IsAnimating();
-    return isDying;
+
+    return deathPlaying;
 }
 
 void Enemy::SetAttackCooldown(float atckCool) {
@@ -167,7 +168,12 @@ void Enemy::SetAttackCooldown(float atckCool) {
 void Enemy::SetExplosion() {
     if (type != EnemyType::EXPLOSIVE) return;
 
-    explosion = new Explosion(radius * 4, damage * 10);
+    explosion = new Explosion(radius * 4, damage * 25);
+
+}
+
+Explosion* Enemy::GetExplosion() {
+    return explosion;
 }
 
 float Enemy::GetAttackCooldown() {
@@ -235,7 +241,7 @@ void Enemy::Attack(Attackable* a) {
 }
 
 void Enemy::TryExplode() {
-    uniform_int_distribution<int> explodeChance(1, 15);
+    uniform_int_distribution<int> explodeChance(1, 3);
     if (explodeChance(gen) == 2) {
         explosion->SetPosition(GetPosition());
         explosion->Explode();
@@ -262,6 +268,7 @@ void Enemy::HandleCollision(Collidable* other, Vector2 penetration) {
 
     if (other->GetCollidableType() == CollidableType::PLAYER) {//if its player
         Attack(static_cast<Player*>(other));
+        SetTarget(other);
         currentRetargetTime = retargetCooldown;//reset cooldown so focus on player isnt lost
     }
     else if (stuckTime >= .5 || other == target) {//if stuck or found target
