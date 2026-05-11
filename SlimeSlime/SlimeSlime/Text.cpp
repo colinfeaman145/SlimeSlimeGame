@@ -12,12 +12,11 @@ Text::~Text() {
     texture = nullptr;
 }
 
-bool Text::Initialize(GameContext& c, const string& inputText, const string& inputFontPath, int inputPointSize) {
+bool Text::Initialize(const string& inputText, const string& inputFontPath, int inputPointSize) {
     text = inputText;
     fontPath = inputFontPath;
     pointSize = inputPointSize;
 
-    context = c;
     SetDrawLayer(RenderLayer::UI);
 
     return BuildTexture();
@@ -48,7 +47,7 @@ bool Text::BuildTexture() {
     int w, h;
     SDL_QueryTexture(newTexture, nullptr, nullptr, &w, &h);
     Sprite::Initialize(newTexture, w, h, 0, 0, w, h);
-    SetDrawLayer(RenderLayer::UI);
+    SetDrawLayer(RenderLayer::UITEXT, 3);
 
     return true;
 }
@@ -56,4 +55,12 @@ bool Text::BuildTexture() {
 void Text::SetText(const string& newText) {
     text = newText;
     BuildTexture();
+}
+
+void Text::SetFontSize(int size) {
+    pointSize = size;
+}
+
+int Text::GetFontSize() {
+    return pointSize;
 }

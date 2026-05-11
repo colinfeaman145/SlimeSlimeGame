@@ -27,6 +27,7 @@ class Player : public Entity {
 		void AddStone(int amount);
 		void RemoveStone(int amount);
 		bool HasEnoughStone(int amount);
+		void IncreaseMaxHealth(int amount);
 		int GetStone() const { return stone; }
 		bool CanMakeRecipe(unordered_map<ResourceType, int> recipe);
 		void RemoveRecipeCost(unordered_map<ResourceType, int> recipe);

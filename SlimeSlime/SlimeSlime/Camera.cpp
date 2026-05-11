@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "Grid.hpp"
 
 Camera::Camera(){
     x = y = 0;
@@ -13,6 +14,16 @@ void Camera::Move(float dx, float dy, float deltaTime) {
 void Camera::Follow(Vector2 pos) {
     x = pos.x - WIDTH / (2.0 * zoom);
     y = pos.y - HEIGHT / (2.0 * zoom);
+
+    //clamp so camera doesnt go outside grid
+    float worldWidth = context.grid->GetGridWidth() * context.grid->GetCellSize();
+    float worldHeight = context.grid->GetGridHeight() * context.grid->GetCellSize();
+
+    float viewWidth = WIDTH / zoom;
+    float viewHeight = HEIGHT / zoom;
+
+    x = max(0.0f, min(x, worldWidth - viewWidth));
+    y = max(0.0f, min(y, worldHeight - viewHeight));
 }
 
 void Camera::SetZoom(float z) {

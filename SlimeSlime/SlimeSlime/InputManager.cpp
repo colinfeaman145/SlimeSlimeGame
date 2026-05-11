@@ -106,6 +106,14 @@ bool InputManager::IsMouseOver(int x, int y, int w, int h) const {
         mouseY >= y && mouseY <= y + h;
 }
 
+void InputManager::SetIsMouseOverUI(bool b) {
+    mouseOverUI = b;
+}
+
+bool InputManager::IsMouseOverUI() const {
+    return mouseOverUI;
+}
+
 int InputManager::GetScrollDelta() const {
     return scrollDelta;
 }

@@ -7,7 +7,7 @@
 #include <vector>
 #include "ShapeType.hpp"
 
-struct color {
+struct Color {
     float r;
     float g;
     float b;
@@ -22,8 +22,10 @@ enum class RenderLayer {
     PLAYER = 5,
     NATURE = 6,
     PARTICLE = 7,
-    UI = 8,
-    DEBUG = 9
+    PERCENTBAR = 8,
+    DEBUG = 9,
+    UI = 10,
+    UITEXT = 11
 };
 
 struct RenderCommand {
@@ -44,7 +46,7 @@ struct BoundingDrawCommand {
     float radius;
     Vector2 direction;
     float halfAngle;
-    color c;
+    Color c;
     int alpha;
     RenderLayer layer;
 };
@@ -61,12 +63,12 @@ public:
     void EndFrame();
 
     // draw a texture
-    void DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, color c, float a, int rotation = 0, 
+    void DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* dstRect, Color c, float a, int rotation = 0, 
         RenderLayer layer = RenderLayer::OBJECTS, int subOrder = 0, bool bm = false, SDL_RendererFlip f = SDL_FLIP_NONE);
-    void AddDrawRect(float x, float y, float w, float h, color c, int a, RenderLayer layer);
-    void AddDrawCircle(float cx, float cy, float radius, color c, int a, RenderLayer layer);
-    void AddDrawCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, color c, int a, RenderLayer layer);
-    void AddFilledRect(float x, float y, float w, float h, color c, int a, RenderLayer layer);
+    void AddDrawRect(float x, float y, float w, float h, Color c, int a, RenderLayer layer);
+    void AddDrawCircle(float cx, float cy, float radius, Color c, int a, RenderLayer layer);
+    void AddDrawCone(float cx, float cy, float radius, Vector2 direction, float halfAngle, Color c, int a, RenderLayer layer);
+    void AddFilledRect(float x, float y, float w, float h, Color c, int a, RenderLayer layer);
 
     SDL_Renderer* GetSDLRenderer() const { return renderer; }
 
@@ -93,7 +95,7 @@ private:
     void DrawBoundingRect(int x, int y, int w, int h);
     void DrawBoundingCircle(int cx, int cy, int radius);
     void DrawBoundingCone(int cx, int cy, int radius, Vector2 direction, float halfAngle);
-    void DrawFilledRect(int x, int y, int w, int h, color c, int a);
+    void DrawFilledRect(int x, int y, int w, int h, Color c, int a, RenderLayer layer);
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ParticleEmitter::ParticleEmitter(SDL_Texture* t, color cmin, color cmax, float sizeMin, float sizeMax) {
+ParticleEmitter::ParticleEmitter(SDL_Texture* t, Color cmin, Color cmax, float sizeMin, float sizeMax) {
 	rng = mt19937(random_device{}());
 	particleImage = t;
 	SDL_QueryTexture(particleImage, nullptr, nullptr, &particleImageW, &particleImageH);
@@ -83,7 +83,7 @@ void ParticleEmitter::SpawnParticle() {
 	float b = blue(rng);
 	Sprite* sprite = new Sprite();
 	sprite->Initialize(particleImage, particleImageW, particleImageH, 0, 0, s, s);
-	sprite->SetColor(color(r, g, b));
+	sprite->SetColor(Color(r, g, b));
 	sprite->SetDrawLayer(RenderLayer::PARTICLE);
 
 	//define particle behavior

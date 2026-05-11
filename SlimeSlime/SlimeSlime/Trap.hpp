@@ -18,6 +18,7 @@ class Trap : public Structure {
 		virtual void ActivateTrapAbility(Enemy* e) = 0;
 		virtual void IncreaseAttack(float amount);
 		virtual void IncreaseAttackByPercent(float amount);
+		void DecreaseTrapCooldownByPercent(float amount);
 
 		void SetPosition(Vector2 pos) override;
 		virtual void HandleCollision(Collidable* other, Vector2 penetration) = 0;

@@ -107,8 +107,11 @@ bool WorldScene::Initialize() {
     unordered_map<ResourceType, int> recWood;
     unordered_map<ResourceType, int> recStone;
     recWood.insert({ ResourceType::WOOD, 3 });
+    recWood.insert({ ResourceType::STONE, 0 });
+    recWood.insert({ ResourceType::COIN, 0 });
     recStone.insert({ ResourceType::WOOD, 2 });
     recStone.insert({ ResourceType::STONE, 5 });
+    recStone.insert({ ResourceType::COIN, 0 });
 
     wallHwood->SetRecipe(recWood);
     wallVwood->SetRecipe(recWood);
@@ -136,7 +139,7 @@ bool WorldScene::Initialize() {
     playerBSprite->SetFrameDuration(0.25);
     playerBSprite->SetLooping(true);
     playerBSprite->SetLeaveOnLastFrame(true);
-    player->Initialize(Vector2(7500, 5000), 100, Vector2(0, 0), playerBSprite);
+    player->Initialize(Vector2(0, 0), 100, Vector2(0, 0), playerBSprite);//7500 5000
     player->SetMovementSpeed(300);
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     elements.push_back(player);
@@ -160,55 +163,70 @@ bool WorldScene::Initialize() {
 
     //UI
     //wood
+    int resourceSize = WIDTH * 0.04;
     SDL_Texture* woodTex = context.txm->LoadTexture(context.renderer, "../../assets/log.png");
     Sprite* woodIcon = new Sprite();
-    woodIcon->Initialize(woodTex, 410, 261, 0, 0, 35, 35);
+    woodIcon->Initialize(woodTex, 410, 261, 0, 0, resourceSize, resourceSize);
     woodIcon->SetDrawLayer(RenderLayer::UI);
     woodIcon->SetPosition(Vector2(10, 10));
     UI.push_back(woodIcon);
 
     woodCount = new Text();
-    woodCount->Initialize(context, "0", "../../fonts/PROXON.ttf", 35);
-    woodCount->SetPosition(50, 10);
+    woodCount->Initialize("0", "../../fonts/PROXON.ttf", resourceSize);
+    woodCount->SetPosition(50, 15);
     UI.push_back(woodCount);
 
     //stone
     SDL_Texture* stoneTex = context.txm->LoadTexture(context.renderer, "../../assets/stone.png");
     Sprite* stoneIcon = new Sprite();
-    stoneIcon->Initialize(stoneTex, 404, 334, 0, 0, 35, 35);
+    stoneIcon->Initialize(stoneTex, 404, 334, 0, 0, resourceSize, resourceSize);
     stoneIcon->SetDrawLayer(RenderLayer::UI);
     stoneIcon->SetPosition(Vector2(10, 50));
     UI.push_back(stoneIcon);
 
     stoneCount = new Text();
-    stoneCount->Initialize(context, "0", "../../fonts/PROXON.ttf", 35);
-    stoneCount->SetPosition(50, 50);
+    stoneCount->Initialize("0", "../../fonts/PROXON.ttf", resourceSize);
+    stoneCount->SetPosition(50, 55);
     UI.push_back(stoneCount);
 
     //coin
     SDL_Texture* coinTex = context.txm->LoadTexture(context.renderer, "../../assets/coin.png");
     Sprite* coinIcon = new Sprite();
-    coinIcon->Initialize(coinTex, 2195, 2195, 0, 0, 35, 35);
+    coinIcon->Initialize(coinTex, 2195, 2195, 0, 0, resourceSize, resourceSize);
     coinIcon->SetDrawLayer(RenderLayer::UI);
     coinIcon->SetPosition(Vector2(10, 90));
     UI.push_back(coinIcon);
 
     coinCount = new Text();
-    coinCount->Initialize(context, "0", "../../fonts/PROXON.ttf", 35);
-    coinCount->SetPosition(50, 90);
+    coinCount->Initialize("0", "../../fonts/PROXON.ttf", resourceSize);
+    coinCount->SetPosition(50, 95);
     UI.push_back(coinCount);
 
+    InitializeUpgradeContainer();
+    InitializeStructureHUD();
 
     return true;
 }
 
-void WorldScene::Process(float deltaTime) {
 
-    ReadInputs(deltaTime);
+void WorldScene::Process(float deltaTime) {
 
     currentSpawnTime -= deltaTime;
     time += deltaTime;
-    context.gameProgress = time / 500;
+    context.gameProgress = time / context.gameDifficulty;
+
+    //update ui
+    woodCount->SetText(to_string(player->GetWood()));
+    stoneCount->SetText(to_string(player->GetStone()));
+    coinCount->SetText(to_string(player->GetCoins()));
+    for (Sprite* s : UI) {
+        s->Process(deltaTime);
+    }
+    UpdateUpgradeLabelColor();
+
+    ReadInputs(deltaTime);
+    context.im->SetIsMouseOverUI(false);
+
     for (Element* e : elements) {
         e->Process(deltaTime);
     }
@@ -219,13 +237,9 @@ void WorldScene::Process(float deltaTime) {
         currentSpawnTime = spawnCooldown;
     }
 
-    //update ui
-    woodCount->SetText(to_string(player->GetWood()));
-    stoneCount->SetText(to_string(player->GetStone()));
-    coinCount->SetText(to_string(player->GetCoins()));
 
     //updateHover
-    UpdateCurrentHoveredCell(player->CanMakeRecipe(GetCurrentStructure()->GetRecipe()));
+    UpdateCurrentHoveredCell(player->CanMakeRecipe(GetCurrentStructure(currentStructure)->GetRecipe()));
 
     //collision updates
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
@@ -233,6 +247,7 @@ void WorldScene::Process(float deltaTime) {
     context.grid->ResolveCollisions(player); //collison updates
 
     context.renderer->cam->Follow(player->GetPosition());//follow player
+
 }
 
 void WorldScene::Draw(Renderer* renderer) {
@@ -263,7 +278,7 @@ void WorldScene::PlaceStructure(bool isHologram) {
     if (!buildMode) return;
     Vector2 vec2 = context.im->GetMouseWorldPosition(context.renderer->cam);
     GridCoord coord = context.grid->WorldToGrid(vec2);
-    Structure* s = GetCurrentStructure();
+    Structure* s = GetCurrentStructure(currentStructure);
     bool occupied = false;
 
     if (!isHologram) RemoveHoverEffect(coord);
@@ -322,25 +337,23 @@ void WorldScene::RemoveStructure(bool couldntAfford) {
     context.grid->InvalidateFlowFieldsNear(coord, 10);
 }
 
-Structure* WorldScene::GetCurrentStructure() {
+Structure* WorldScene::GetCurrentStructure(int currentStruct) {
     Trap* s = nullptr;
-    switch (currentStructure) {
+    switch (currentStruct) {
         case(1)://horizontal wall
              return isStone ? wallHstone : wallHwood;
         case(2):
             return isStone ? wallVstone : wallVwood;
         case(3):
-            return nullptr;
-        case(4):
             pushTrap->SetDirection(pushTrapDirection);
             return pushTrap;
-        case(5):
+        case(4):
             return spikeTrap;
-        case(6):
+        case(5):
             return fireTrap;
-        case(7):
+        case(6):
             return freezeTrap;
-        case(8):
+        case(7):
             return explosionTrap;
     }
     return nullptr;

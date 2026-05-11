@@ -26,6 +26,8 @@ public:
     Vector2 GetMousePosition() const;
     Vector2 GetMouseWorldPosition(Camera* cam) const;
     bool IsMouseOver(int x, int y, int w, int h) const;
+    void SetIsMouseOverUI(bool b);
+    bool IsMouseOverUI() const;
 
     int GetScrollDelta() const;
 
@@ -35,6 +37,8 @@ private:
     int prevMouseX = 0;
     int prevMouseY = 0;
     int scrollDelta = 0;
+
+    bool mouseOverUI;
 
     //mouse buttons (1=Left, 2=Middle, 3=Right)
     unordered_map<Uint8, bool> currentMouseButtons;

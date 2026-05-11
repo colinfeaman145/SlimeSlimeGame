@@ -14,10 +14,7 @@ bool AttackCone::Initialize(Vector2 pos, AnimatedSprite* spr) {
 	sprite = spr;
 	position = pos;
 
-	CollisionShape cs = CollisionShape::MakeCone(radius, Vector2(1.0, 0.0), halfAngle);
-	SetCollisionBound(cs);
-	canCollide = false;
-	collideType = CollidableType::ATTACK_CONE;
+	UpdateConeBounds();
 
 	swoosh = spr;
 	swoosh->SetPosition(pos);
@@ -79,18 +76,35 @@ void AttackCone::IncreaseAttackDamage(int damage) {
 
 void AttackCone::IncreaseRadius(int increaseAmount) {
 	radius += increaseAmount;
+	UpdateConeBounds();
 }
 
 void AttackCone::IncreaseWidth(float increaseAmount) {
+	if (halfAngle >= PI) return;
 	halfAngle += increaseAmount;
 	int arcWidth = (int)(2 * radius * sin(halfAngle));
 	swoosh->SetDrawSize(arcWidth, swoosh->GetHeight());
+
+	if (halfAngle > PI) halfAngle = PI;
+
+	UpdateConeBounds();
+}
+
+void AttackCone::DecreaseAttackCooldown(float decreaseAmount) {
+	attackCooldown -= decreaseAmount;
 }
 
 float AttackCone::CalculateAttackDamage(float dist) {
 	float damageScaler = (dist / radius) * 1.5; //do up to 1.5 more damage depending on distance
 	float damage = attackDamage * damageScaler;
 	return min(damage, attackDamage * 0.5f); //do no less than half of attack
+}
+
+void AttackCone::UpdateConeBounds() {
+	CollisionShape cs = CollisionShape::MakeCone(radius, Vector2(1.0, 0.0), halfAngle);
+	SetCollisionBound(cs);
+	canCollide = false;
+	collideType = CollidableType::ATTACK_CONE;
 }
 
 void AttackCone::HandleCollision(Collidable* other, Vector2 penetration) {

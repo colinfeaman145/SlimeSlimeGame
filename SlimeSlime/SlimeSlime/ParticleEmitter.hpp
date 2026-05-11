@@ -38,7 +38,7 @@ protected:
 	//TODO add color range
 
 public:
-	ParticleEmitter(SDL_Texture* t, color cmin, color cmax, float sizeMin, float sizeMax);
+	ParticleEmitter(SDL_Texture* t, Color cmin, Color cmax, float sizeMin, float sizeMax);
 	~ParticleEmitter();
 	void Initialize();
 	void Initialize(Vector2 vMin, Vector2 vMax, float rMin, float rMax, float aMin, float aMax, float adMin, float adMax, float ageMin, float ageMax);

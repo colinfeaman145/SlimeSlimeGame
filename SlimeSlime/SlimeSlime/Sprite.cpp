@@ -5,7 +5,7 @@ Sprite::Sprite() {
     srcRect = { 0, 0, 0, 0 };
     dstRect = { 0, 0, 0, 0 };
     rotation = 0.0f;
-    color = struct color(255, 255, 255);
+    color = Color(255, 255, 255);
     alpha = 255;
 }
 
@@ -76,7 +76,7 @@ void Sprite::SetRotation(float angle) {
     rotation = angle;
 }
 
-void Sprite::SetColor(struct color c) {
+void Sprite::SetColor(Color c) {
     color = c;
 }
 

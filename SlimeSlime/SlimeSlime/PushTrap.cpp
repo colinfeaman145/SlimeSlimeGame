@@ -8,6 +8,12 @@ PushTrap::PushTrap(const PushTrap& other) : Trap(other){
 void PushTrap::Initialize(int dir) {
 	int size = context.grid->GetCellSize();
 
+	//recipe
+	recipe.clear();
+	recipe.insert({ ResourceType::WOOD, 10 });
+	recipe.insert({ ResourceType::STONE, 10 });
+	recipe.insert({ ResourceType::COIN, 15 });
+
 	AnimatedSprite* s = new AnimatedSprite();
 	SDL_Texture* tex = context.txm->LoadTexture(context.renderer, "../../assets/traps/push_trap.png");
 	s->Initialize(tex, 256, 256, 0, 0, size, size, 4, 16);

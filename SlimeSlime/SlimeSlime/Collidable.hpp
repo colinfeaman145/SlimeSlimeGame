@@ -114,7 +114,7 @@ class Collidable {
         virtual void HandleCollision(Collidable* other, Vector2 penetration) = 0;
 
         //debug 
-        virtual void Draw(Renderer* renderer, color c, int a = 255, RenderLayer layer = RenderLayer::DEBUG);
+        virtual void Draw(Renderer* renderer, Color c, int a = 255, RenderLayer layer = RenderLayer::DEBUG);
  };
 
 #endif

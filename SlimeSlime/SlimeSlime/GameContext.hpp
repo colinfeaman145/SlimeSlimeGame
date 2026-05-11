@@ -10,11 +10,14 @@
 
 class Grid;
 
-//class Renderer;
-//class TextureManager;
-//class FontManager;
-//class AudioManager;
+#define DEBUGMODE true
+#define GOD_MODE true
 
+enum class Difficulty {
+    EASY = 130,
+    NORMAL = 100,
+    HARD = 65
+};
 
 struct GameContext {
     Renderer* renderer;
@@ -24,6 +27,7 @@ struct GameContext {
     InputManager* im;
     Grid* grid;
     float gameProgress;
+    int gameDifficulty;
 };
 
 inline GameContext context;

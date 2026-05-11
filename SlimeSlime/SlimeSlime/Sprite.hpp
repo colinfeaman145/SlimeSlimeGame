@@ -17,10 +17,10 @@ public:
     virtual void Process(float deltaTime);
     virtual void Draw(Renderer* renderer);
 
-    void SetPosition(int x, int y);
+    virtual void SetPosition(int x, int y);
     void SetPosition(Vector2 vec);
     void SetRotation(float angle);
-    void SetColor(color c);
+    void SetColor(Color c);
     void SetAlpha(int a);
     void SetDrawSize(int w, int h);
     void SetDrawLayer(RenderLayer l, int sl = 0);
@@ -31,12 +31,12 @@ public:
     Vector2 GetPosition() const { return Vector2(dstRect.x, dstRect.y); }
     Vector2 GetDrawSize() const { return Vector2(dstRect.w, dstRect.h); }
     float GetRotation() const { return rotation; }
-    color GetColor() const { return color; }
+    Color GetColor() const { return color; }
     float GetAlpha() const { return alpha; }
 
 protected: 
     SDL_Texture* texture;
-    color color;
+    Color color;
     float alpha;
     float rotation;
     RenderLayer layer;

@@ -170,7 +170,7 @@ void EnemySpawner::Process(float deltaTime) {
 		Enemy* e = *it;
 		if (e->IsAlive()) {
 			e->Process(deltaTime);
-			if(!e->IsFrozen()) context.grid->ResolveCollisions(e);
+			context.grid->ResolveCollisions(e);
 			++it;
 		}
 		else {
@@ -188,10 +188,11 @@ void EnemySpawner::Process(float deltaTime) {
 
 void EnemySpawner::SpawnEnemies() {
 
+	//limits number of enemy spawns
 	if (enemies.size() > min((context.gameProgress + 1) * 50, 300.0f)) return;
 
 	//get spawn pool
-	float progress = context.gameProgress + 12;
+	float progress = context.gameProgress;
 	SpawnPool pool;
 	for (const SpawnPool& s : spawnPools) {
 		if (s.min <= progress && progress < s.max) {

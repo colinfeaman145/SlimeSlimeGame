@@ -77,6 +77,10 @@ void Trap::IncreaseAttackByPercent(float amount) {
 	damage += (damage * amount);
 }
 
+void Trap::DecreaseTrapCooldownByPercent(float amount) {
+	cooldown -= (cooldown * amount);
+}
+
 void Trap::SetPosition(Vector2 pos) {
 	Structure::SetPosition(pos);
 

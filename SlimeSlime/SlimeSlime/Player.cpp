@@ -12,6 +12,11 @@ void Player::Initialize(Vector2 pos, int pullRadius, Vector2 vel, AnimatedSprite
 	coins = 0;
 	wood = 100;
 	stone = 0;
+	if (GOD_MODE) {
+		coins = 10000000;
+		wood = 10000;
+		stone = 10000;
+	}
 
 	Vector2 size = sprite->GetDrawSize();
 	healthBar = new PercentageBar(health, maxHealth, size.x * 1.1, size.y * 0.2, { 255, 50, 50 }, { 150, 50, 50 });
@@ -111,6 +116,12 @@ void Player::RemoveStone(int amount) {
 
 bool Player::HasEnoughStone(int amount) {
 	return stone >= amount;
+}
+
+void Player::IncreaseMaxHealth(int amount) {
+	float healthPercent = health / maxHealth;
+	maxHealth += amount;
+	health = maxHealth * healthPercent;
 }
 
 bool Player::CanMakeRecipe(unordered_map<ResourceType, int> recipe) {

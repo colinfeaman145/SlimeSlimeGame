@@ -45,6 +45,14 @@ bool Entity::Initialize(Vector2 pos, Vector2 vel, Sprite* spr) {
 void Entity::Process(float deltaTime) {
     position = position + (velocity * deltaTime);
 
+    //stay inside grid
+    float worldWidth = context.grid->GetGridWidth() * context.grid->GetCellSize();
+    float worldHeight = context.grid->GetGridHeight() * context.grid->GetCellSize();
+
+    Vector2 size = sprite->GetDrawSize();
+    position.x = max(0.0f, min(position.x, worldWidth - size.x));
+    position.y = max(0.0f, min(position.y, worldHeight - size.y));
+
     if (sprite) {
         sprite->SetPosition((int)position.x, (int)position.y);
         sprite->Process(deltaTime);

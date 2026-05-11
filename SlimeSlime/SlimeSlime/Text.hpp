@@ -14,15 +14,15 @@ class Text : public Sprite, public Element {
 public:
     Text();
     ~Text();
-    bool Initialize(GameContext& context, const string& text, const string& fontPath, int pointSize);
+    bool Initialize(const string& text, const string& fontPath, int pointSize);
     void SetText(const string& text);
+    void SetFontSize(int size);
+    int GetFontSize();
     void Draw(Renderer* renderer) override { Sprite::Draw(renderer); }
     void Process(float deltaTime) override { Sprite::Process(deltaTime); }
 
 private:
     bool BuildTexture();
-
-    GameContext context;
 
     string text;
     string fontPath;

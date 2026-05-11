@@ -3,9 +3,10 @@
 #include <fmod.hpp>
 #include <map>
 #include <string>
+#include <vector>
 #include "Vector2.hpp"
 
-#define SOUND_COOLDOWN 0.25
+#define SOUND_COOLDOWN 0.1
 
 using namespace FMOD;
 using namespace std;
@@ -27,6 +28,11 @@ public:
     bool IsGroupPaused(const string& name);
     void StopGroup(const string& name);
 
+    bool LoadMusicTrack(const string& name, const string& path);
+    void PlayMusic(const string& soundName);
+    void ProcessMusic();
+    bool IsSoundPlaying();
+
     System* GetSystem() { return system; }
 
 private:
@@ -35,6 +41,11 @@ private:
     map<string, float> soundCooldown;
     map<string, ChannelGroup*> groups;
     FMOD_VECTOR listenerPos;
+    bool ambientPlaying;
+    bool musicPlaying;
+    vector<string> musicTracks;
+    string currentTrack;
+    Channel* musicChannel = nullptr;
 };
 
 #endif

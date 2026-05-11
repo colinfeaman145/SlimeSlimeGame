@@ -3,7 +3,6 @@
 void WorldScene::LoadSounds() {
 
 	context.am->AddGroup("Default");
-	context.am->AddGroup("Background");
 
 	//sword
 	context.am->LoadSound("../../assets/sounds/sword_swing.mp3", "SwordSwing");
@@ -32,8 +31,8 @@ void WorldScene::LoadSounds() {
 	context.am->LoadSound("../../assets/sounds/slime_hit3.wav", "SlimeHit3");
 
 	//background
-	context.am->LoadSound("../../assets/sounds/ambient.mp3", "Ambient");
-	context.am->LoadSound("../../assets/sounds/background_music1.mp3", "Music");
+	context.am->LoadMusicTrack("../../assets/sounds/ambient.mp3", "Ambient");
+	context.am->LoadMusicTrack("../../assets/sounds/background_music1.mp3", "Music");
 
 	//pickup
 	context.am->LoadSound("../../assets/sounds/item_pickup.wav", "Pickup");
@@ -41,4 +40,8 @@ void WorldScene::LoadSounds() {
 	//explosion
 	context.am->LoadSound("../../assets/sounds/explosion.mp3", "Explosion");
 	context.am->LoadSound("../../assets/sounds/explosion_prepare.mp3", "ExplosionPrepare");
+
+	//upgrade
+	context.am->LoadSound("../../assets/sounds/upgrade.mp3", "Upgrade");
+
 }

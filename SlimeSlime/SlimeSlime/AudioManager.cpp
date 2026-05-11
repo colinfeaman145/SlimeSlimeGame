@@ -18,6 +18,31 @@ void AudioManager::Process(Vector2 pos, float deltaTime) {
     for (auto& c : soundCooldown) {
         c.second -= deltaTime;
     }
+    ProcessMusic();
+}
+
+void AudioManager::ProcessMusic() {
+    if (IsSoundPlaying()) return; //still playing, do nothing
+
+    if (musicTracks.empty()) return;
+
+    //pick random track, avoid playing same track twice in a row
+    uniform_int_distribution<int> trackGen(0, musicTracks.size() - 1);
+    string next = musicTracks[trackGen(gen)];
+
+    if (musicTracks.size() > 1)
+        while (next == currentTrack)
+            next = musicTracks[trackGen(gen)];
+
+    currentTrack = next;
+    PlayMusic(currentTrack);
+}
+
+bool AudioManager::IsSoundPlaying() {
+    if (!musicChannel) return false;
+    bool playing = false;
+    musicChannel->isPlaying(&playing);
+    return playing;
 }
 
 void AudioManager::Cleanup() {
@@ -42,15 +67,32 @@ bool AudioManager::LoadSound(const string& filepath, const string& soundName) {
     return 1;
 }
 
+bool AudioManager::LoadMusicTrack(const string& name, const string& path) {
+    if (sounds.count(name)) return false;
+
+    Sound* sound = nullptr;
+    system->createSound(path.c_str(), FMOD_2D | FMOD_LOOP_OFF, nullptr, &sound); // 2D, no loop
+    sounds[name] = sound;
+    musicTracks.push_back(name);
+    return true;
+}
+
+void AudioManager::PlayMusic(const string& soundName) {
+    if (!sounds.contains(soundName)) return;
+
+    system->playSound(sounds[soundName], groups["Music"], true, &musicChannel);
+    musicChannel->setPaused(false);
+}
+
 /*
 * FMOD_VECTOR pos = {x, y, z};
 * FMOD_VECTOR vel = {0, 0, 0};
 */
 bool AudioManager::PlaySound(const string& soundName, const string& groupName, const FMOD_VECTOR& pos, const FMOD_VECTOR& vel, Vector2 pitchVariance) {
-    if (!sounds.contains(soundName)) return 0;//sound not loaded
-    if (soundCooldown[soundName] > 0) return 0;//wait for cooldown period
+    if (!sounds.contains(soundName)) return 0; // sound not loaded
+    if (soundCooldown[soundName] > 0) return 0; // wait for cooldown period
 
-    //set pitch based on variance
+    // set pitch based on variance
     uniform_real_distribution<float> pitchGen(pitchVariance.x, pitchVariance.y);
     SetGroupPitch(groupName, pitchGen(gen));
 
@@ -59,7 +101,7 @@ bool AudioManager::PlaySound(const string& soundName, const string& groupName, c
     channel->set3DAttributes(&pos, &vel);
     channel->setPaused(false);
 
-    //update cooldown
+    // update cooldown
     soundCooldown[soundName] = SOUND_COOLDOWN;
     return 1;
 }

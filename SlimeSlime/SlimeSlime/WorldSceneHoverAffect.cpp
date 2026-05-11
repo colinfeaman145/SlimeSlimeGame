@@ -31,7 +31,7 @@ void WorldScene::UpdateCurrentHoveredCell(bool canAfford) {
 }
 
 void WorldScene::UpdateHoverColor(GridCell* cell, bool canAfford) {
-    color c = canAfford ? color{ 100, 100, 255 } : color{ 255, 100, 100 };
+    Color c = canAfford ? Color{ 100, 100, 255 } : Color{ 255, 100, 100 };
     int alpha = canAfford ? 100 : 200;
 
     //walls

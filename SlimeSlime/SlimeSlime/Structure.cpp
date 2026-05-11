@@ -8,6 +8,8 @@ Structure::Structure(){
     maxHealth = 100;
     health = maxHealth;
     recipe.insert({ ResourceType::WOOD, 3 });
+    recipe.insert({ ResourceType::STONE, 0 });
+    recipe.insert({ ResourceType::COIN, 0 });
 }
 
 Structure::Structure(const Structure& other){
@@ -112,7 +114,7 @@ void Structure::SetDurability(int d) {
     health = (health / maxHealth) * d;//maintain current percent of health
     maxHealth = d;
     healthBar->SetValues(health, maxHealth);
-    if (d > 100) {
+    if (d > 200) {
         healthBar->SetFillColor({ 200, 200, 0 });
     }
 }

@@ -13,6 +13,12 @@ ExplosionTrap::~ExplosionTrap() {
 void ExplosionTrap::Initialize() {
 	int size = context.grid->GetCellSize();
 
+	//recipe
+	recipe.clear();
+	recipe.insert({ ResourceType::WOOD, 20 });
+	recipe.insert({ ResourceType::STONE, 30 });
+	recipe.insert({ ResourceType::COIN, 100 });
+
 	AnimatedSprite* s = new AnimatedSprite();
 	SDL_Texture* tex = context.txm->LoadTexture(context.renderer, "../../assets/traps/explosion_trap.png");
 	s->Initialize(tex, 179, 176, 0, 0, size, size, 4, 16);

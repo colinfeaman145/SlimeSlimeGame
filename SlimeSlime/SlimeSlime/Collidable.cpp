@@ -23,7 +23,7 @@ Vector2 Collidable::GetCenter() const {
     }
 }
 
-void Collidable::Draw(Renderer* renderer, color c, int a, RenderLayer layer) {
+void Collidable::Draw(Renderer* renderer, Color c, int a, RenderLayer layer) {
     CollisionShape s = GetCollisionBound();
     Vector2 wp = s.WorldPosition(GetPosition());
     switch (s.type) {

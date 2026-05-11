@@ -13,7 +13,7 @@ PercentageBar::PercentageBar(const PercentageBar& other) {
     offsetY = other.offsetY;
 }
 
-PercentageBar::PercentageBar(float current, float max, int w, int h, color fillColor, color outlineColor)
+PercentageBar::PercentageBar(float current, float max, int w, int h, Color fillColor, Color outlineColor)
     : current(current), max(max), w(w), h(h), x(0), y(0)
     , fillColor(fillColor), outlineColor(outlineColor) {
 }
@@ -33,8 +33,8 @@ void PercentageBar::SetOffset(int offX, int offY) {
     offsetY = offY;
 }
 
-void PercentageBar::SetFillColor(color c) { fillColor = c; }
-void PercentageBar::SetOutlineColor(color c) { outlineColor = c; }
+void PercentageBar::SetFillColor(Color c) { fillColor = c; }
+void PercentageBar::SetOutlineColor(Color c) { outlineColor = c; }
 
 void PercentageBar::Draw(Renderer* renderer) {
     float pct = (max > 0) ? current / max : 0.0f;
@@ -45,8 +45,8 @@ void PercentageBar::Draw(Renderer* renderer) {
 
     // fill
     if (fillWidth > 0)
-        renderer->AddFilledRect(x + offsetX, y + offsetY, fillWidth, h, fillColor, 255, RenderLayer::UI);
+        renderer->AddFilledRect(x + offsetX, y + offsetY, fillWidth, h, fillColor, 255, RenderLayer::PERCENTBAR);
 
     // outline
-    renderer->AddDrawRect(x + offsetX, y + offsetY, w, h, outlineColor, 255, RenderLayer::UI);
+    renderer->AddDrawRect(x + offsetX, y + offsetY, w, h, outlineColor, 255, RenderLayer::PERCENTBAR);
 }

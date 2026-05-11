@@ -11,6 +11,8 @@
 #include "FireTrap.hpp"
 #include "FreezeTrap.hpp"
 #include "ExplosionTrap.hpp"
+#include "Container.hpp"
+#include "Button.hpp"
 
 class WorldScene : public Scene {
 public:
@@ -30,7 +32,7 @@ public:
     void ChangeMaterial();
     void PlaceStructure(bool isHologram = false);
     void RemoveStructure(bool couldntAfford = false);
-    Structure* GetCurrentStructure();
+    Structure* GetCurrentStructure(int currentStruct);
     int GetCurrentStructureNumber() const { return currentStructure; }
     Entity* GetPlayer();
     void MovePlayer(MovementDir dir, float deltaTime);
@@ -40,6 +42,22 @@ public:
     void UpdateHoverColor(GridCell* cell, bool canAfford);
     void ApplyHoverEffect(GridCell* cell, bool canAfford);
     void RemoveHoverEffect(GridCoord coord);
+
+    void InitializeUpgradeContainer();
+    void UpgradeDamage();
+    void UpgradeHealth();
+    void UpgradeAttackSpeed();
+    void UpgradeAttackRange();
+    void UpgradeStructureHealth();
+    void UpgradeTrapDamage();
+    void UpgradeTrapCooldown();
+    bool CanUpgrade();
+    void IncreaseUpgradeCost();
+    void ToggleUpgradeBox();
+    void UpdateUpgradeLabelColor();
+
+    void InitializeStructureHUD();
+    Container* MakeStructureCard(int i);
 
 private:
     float time;
@@ -60,6 +78,7 @@ private:
     FireTrap* fireTrap;
     FreezeTrap* freezeTrap;
     ExplosionTrap* explosionTrap;
+
     int currentStructure;
     bool isStone;
     int pushTrapDirection;
@@ -67,6 +86,31 @@ private:
     Text* woodCount;
     Text* stoneCount;
     Text* coinCount;
+
+    Container* upBox;
+    Vector2 textDrawSize;
+
+    Container* structureHUD;
+    Container* structureCards[7];
+
+    int upgradeLevel;
+    Text* upgradeCostLabel;
+    int upgradeCost;
+    Text* upDamageLabel;
+    int damageLevel;
+    Text* upHealthLabel;
+    int healthLevel;
+    Text* upRangeLabel;
+    int rangeLevel;
+    Text* upCooldownLabel;
+    int cooldownLevel;
+    Text* upDurabilityLabel;
+    int durabilityLevel;
+    Text* upTrapDamageLabel;
+    int trapDamageLevel;
+    Text* upTrapCooldownLabel;
+    int trapCooldownLevel;
+
 };
 
 #endif

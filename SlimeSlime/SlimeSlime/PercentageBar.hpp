@@ -6,13 +6,13 @@
 class PercentageBar {
 public:
     PercentageBar(const PercentageBar& other);
-    PercentageBar(float current, float max, int w, int h, color fillColor, color outlineColor);
+    PercentageBar(float current, float max, int w, int h, Color fillColor, Color outlineColor);
 
     void SetValues(float current, float max);
     void SetPosition(int x, int y);
     void SetOffset(int offX, int offY);
-    void SetFillColor(color c);
-    void SetOutlineColor(color c);
+    void SetFillColor(Color c);
+    void SetOutlineColor(Color c);
     void Draw(Renderer* renderer);
 
 private:
@@ -24,8 +24,8 @@ private:
     int y;
     int offsetX;
     int offsetY;
-    color fillColor;
-    color outlineColor;
+    Color fillColor;
+    Color outlineColor;
 };
 
 #endif

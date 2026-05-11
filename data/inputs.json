@@ -5,13 +5,13 @@
     "move_down":    ["down", "s"],
     "change_scene": ["tab"],
     "pause":        ["escape"],
-    "build_mode":   ["b"],
-    "change_material":   ["n"],
+    "build_mode":   ["b", "f"],
+    "open_upgrades":   ["u", "r"],
+    "change_material":   ["c"],
     "wall":         ["1"],
-    "barbed_wire":  ["2"],
-    "push_trap":    ["3"],
-    "spike_trap":   ["4"],
-    "fire_trap":    ["5"],
-    "ice_trap":     ["6"],
-    "explosion_trap":    ["7"]
+    "push_trap":    ["2"],
+    "spike_trap":   ["3"],
+    "fire_trap":    ["4"],
+    "ice_trap":     ["5"],
+    "explosion_trap":    ["6"]
 }

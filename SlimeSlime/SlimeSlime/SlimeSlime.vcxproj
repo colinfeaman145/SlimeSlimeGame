@@ -137,8 +137,10 @@
     <ClCompile Include="AnimatedSprite.cpp" />
     <ClCompile Include="AttackCone.cpp" />
     <ClCompile Include="AudioManager.cpp" />
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collidable.cpp" />
+    <ClCompile Include="Container.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyPathFinding.cpp" />
     <ClCompile Include="EnemySpawner.cpp" />
@@ -178,17 +180,21 @@
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="WorldSceneHoverAffect.cpp" />
+    <ClCompile Include="WorldSceneInitializeStructureHUD.cpp" />
     <ClCompile Include="WorldSceneLoadSounds.cpp" />
     <ClCompile Include="WorldSceneReadInputs.cpp" />
+    <ClCompile Include="WorldSceneUpgrades.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatedSprite.hpp" />
     <ClInclude Include="Attackable.hpp" />
     <ClInclude Include="AttackCone.hpp" />
     <ClInclude Include="AudioManager.hpp" />
+    <ClInclude Include="Button.hpp" />
     <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Collidable.hpp" />
     <ClInclude Include="Collision.hpp" />
+    <ClInclude Include="Container.hpp" />
     <ClInclude Include="Element.hpp" />
     <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="EnemySpawner.hpp" />

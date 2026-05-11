@@ -23,12 +23,14 @@ class AttackCone : public Entity {
 		void IncreaseAttackDamage(int damage);
 		void IncreaseRadius(int increaseAmount);
 		void IncreaseWidth(float increaseAmount);
+		void DecreaseAttackCooldown(float decreaseAmount);
 		int GetAttackDamage() const { return attackDamage; }
 		int GetRadius() const { return radius; }
 		float GetHalfAngle() const { return halfAngle; }
 		float GetCooldownTime() const { return attackCooldown; }
 		float GetCurrentAttackCooldownTime() const { return currentAttackTime; }
 		float CalculateAttackDamage(float dist);
+		void UpdateConeBounds();
 
 		void HandleCollision(Collidable* other, Vector2 penetration) override;
 	private:
