@@ -26,8 +26,8 @@ public:
     void SetDrawLayer(RenderLayer l, int sl = 0);
     void SetIsFlashing(bool flash);
     void SetFlip(bool flipH);
-    int GetWidth() const { return dstRect.w; };
-    int GetHeight() const { return dstRect.h; };
+    virtual int GetWidth() const { return dstRect.w; };
+    virtual int GetHeight() const { return dstRect.h; };
     Vector2 GetPosition() const { return Vector2(dstRect.x, dstRect.y); }
     Vector2 GetDrawSize() const { return Vector2(dstRect.w, dstRect.h); }
     float GetRotation() const { return rotation; }

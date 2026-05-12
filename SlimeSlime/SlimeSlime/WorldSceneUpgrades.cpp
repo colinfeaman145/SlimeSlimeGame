@@ -88,7 +88,7 @@ void WorldScene::InitializeUpgradeContainer() {
 
     //label
     upCooldownLabel = new Text();
-    upCooldownLabel->Initialize("Atk. Speed( 1 )", "../../fonts/PROXON.ttf", 100);
+    upCooldownLabel->Initialize("Agility( 1 )", "../../fonts/PROXON.ttf", 100);
     upCooldownLabel->SetDrawSize(textDrawSize.x, textDrawSize.y);
     upBox->AddText(upCooldownLabel, upBox->GetWidth() * 0.05, (upBox->GetHeight() * 0.025) + (rowHeight * 0.125) + (rowHeight * row));
     upBox->AddButton(upCooldownButton, upBox->GetWidth() * 0.7625, (upBox->GetHeight() * 0.025) + (rowHeight * 0.0625) + (rowHeight * row));
@@ -179,6 +179,7 @@ void WorldScene::UpgradeHealth() {
     if (!CanUpgrade()) return;
     player->RemoveCoins(upgradeCost);
     player->IncreaseMaxHealth(player->GetHealth() * 0.1);
+    player->DecreaseHealCooldownByPercent(0.02);
 
     healthLevel++;
     upHealthLabel->SetText("Vitality( " + to_string(healthLevel) + " )");
@@ -193,9 +194,10 @@ void WorldScene::UpgradeAttackSpeed() {
     player->RemoveCoins(upgradeCost);
     AttackCone* cone = player->GetAttackCone();
     cone->DecreaseAttackCooldown(cone->GetCooldownTime() * 0.05);
+    player->SetMovementSpeed(player->GetMovementSpeed() * 0.05);
 
     cooldownLevel++;
-    upCooldownLabel->SetText("Atk. Speed( " + to_string(cooldownLevel) + " )");
+    upCooldownLabel->SetText("Agility( " + to_string(cooldownLevel) + " )");
     upCooldownLabel->SetDrawSize(textDrawSize.x, textDrawSize.y);
 
     IncreaseUpgradeCost();
@@ -223,17 +225,17 @@ void WorldScene::UpgradeStructureHealth() {
 
     wallHstone->SetDurability(wallHstone->GetMaxHealth() * 1.1);
     wallHwood->SetDurability(wallHwood->GetMaxHealth() * 1.1);
-    wallVstone->SetDurability(wallVstone->GetMaxHealth() * 1.1);
-    wallVwood->SetDurability(wallVwood->GetMaxHealth() * 1.1);
-    pushTrap->SetDurability(pushTrap->GetMaxHealth() * 1.1);
-    spikeTrap->SetDurability(spikeTrap->GetMaxHealth() * 1.1);
-    fireTrap->SetDurability(fireTrap->GetMaxHealth() * 1.1);
-    freezeTrap->SetDurability(freezeTrap->GetMaxHealth() * 1.1);
-    explosionTrap->SetDurability(explosionTrap->GetMaxHealth() * 1.1);
+    wallVstone->SetDurability(wallVstone->GetMaxHealth() * 1.05);
+    wallVwood->SetDurability(wallVwood->GetMaxHealth() * 1.05);
+    pushTrap->SetDurability(pushTrap->GetMaxHealth() * 1.05);
+    spikeTrap->SetDurability(spikeTrap->GetMaxHealth() * 1.05);
+    fireTrap->SetDurability(fireTrap->GetMaxHealth() * 1.05);
+    freezeTrap->SetDurability(freezeTrap->GetMaxHealth() * 1.05);
+    explosionTrap->SetDurability(explosionTrap->GetMaxHealth() * 1.05);
 
     vector<Structure*> structures = context.grid->GetNearbyStructures(context.grid->WorldToGrid(context.grid->GetAtlas()->GetPosition()), context.grid->GetGridWidth());
     for (Structure* s : structures) {
-        s->SetDurability(s->GetMaxHealth() * 1.1);
+        s->SetDurability(s->GetMaxHealth() * 1.05);
     }
 
     durabilityLevel++;

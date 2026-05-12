@@ -32,7 +32,9 @@ void WorldScene::LoadSounds() {
 
 	//background
 	context.am->LoadMusicTrack("../../assets/sounds/ambient.mp3", "Ambient");
-	context.am->LoadMusicTrack("../../assets/sounds/background_music1.mp3", "Music");
+	context.am->LoadMusicTrack("../../assets/sounds/background_music1.mp3", "Song1");
+	context.am->LoadMusicTrack("../../assets/sounds/background_music2.mp3", "Song2");
+	context.am->LoadMusicTrack("../../assets/sounds/background_music2.mp3", "Song3");
 
 	//pickup
 	context.am->LoadSound("../../assets/sounds/item_pickup.wav", "Pickup");

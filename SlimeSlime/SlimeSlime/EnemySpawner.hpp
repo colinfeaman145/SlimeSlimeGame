@@ -31,6 +31,8 @@ class EnemySpawner : public Element
 		EnemyType GetRandomEnemyType(SpawnPool pool);
 		EnemyType StringToEnemyType(const string& str);
 
+		AnimatedSprite* GetSprite(EnemyType type);//used for how to play menu
+
 	private:
 		vector<Enemy*> enemies;
 		vector<SpawnPool> spawnPools;

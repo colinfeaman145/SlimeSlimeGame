@@ -17,6 +17,7 @@ public:
     bool Initialize(const string& text, const string& fontPath, int pointSize);
     void SetText(const string& text);
     void SetFontSize(int size);
+    void SetFontStyle(int style);
     int GetFontSize();
     void Draw(Renderer* renderer) override { Sprite::Draw(renderer); }
     void Process(float deltaTime) override { Sprite::Process(deltaTime); }
@@ -29,6 +30,7 @@ private:
     int pointSize;
     SDL_Color textColor;
     string textureKey;
+    int fontStyle;
 };
 
 #endif

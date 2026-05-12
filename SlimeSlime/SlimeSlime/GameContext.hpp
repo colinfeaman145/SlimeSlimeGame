@@ -2,6 +2,7 @@
 #define GAMECONTEXT_HPP
 
 #include <random>
+#include <functional>
 #include "Renderer.hpp"
 #include "TextureManager.hpp"
 #include "FontManager.hpp"
@@ -28,6 +29,7 @@ struct GameContext {
     Grid* grid;
     float gameProgress;
     int gameDifficulty;
+    function<void(int)> changeScene;
 };
 
 inline GameContext context;

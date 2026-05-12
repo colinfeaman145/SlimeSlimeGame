@@ -18,6 +18,8 @@ public:
     bool Initialize();
     void Run();
     void Cleanup();
+    void ChangeScene(int s);
+    void Quit();
 
 private:
     void Process(float deltaTime);

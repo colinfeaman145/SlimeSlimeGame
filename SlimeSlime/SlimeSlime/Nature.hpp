@@ -7,9 +7,10 @@
 #include "Sprite.hpp"
 #include "Grid.hpp"
 #include "NatureType.hpp"
+#include "ParticleEmitter.hpp"
 
 class Nature : public Entity {
-public:
+	public:
 		void Initialize(Sprite* spr, NatureType t, bool canCollide);
 		NatureType GetNatureType() const { return type; }
 		void SetPosition(Vector2 pos);
@@ -24,6 +25,7 @@ public:
 		void SpawnDrops();
 
 		void HandleCollision(Collidable* other, Vector2 penetration) override;
+		ParticleEmitter* pe;
 	protected:
 		NatureType type;
 };
@@ -107,6 +109,11 @@ static Nature* GetRandomTree() {
 	healthBar->SetPosition(n->GetPosition().x, n->GetPosition().y);
 	healthBar->SetOffset(cs.offset.x - (cs.box.width * 0.1), (sprite->GetHeight() * 0.9));
 	n->SetHealthBar(healthBar);
+
+	//set pe
+	SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
+	n->pe = new ParticleEmitter(t2, Color(140, 40, 0), Color(170, 70, 40), 5, 10);
+	n->pe->Initialize(Vector2(-100, -200), Vector2(100, -100), -5, 5, 200, 255, 10, 25, 2, 3);
 	
 	return n;
 }
@@ -153,6 +160,11 @@ static Nature* GetRandomRock() {
 	n->SetCollisionBound(cs);
 	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::ROCK));
 
+	//set pe
+	SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
+	n->pe = new ParticleEmitter(t2, Color(20, 20, 20), Color(70, 70, 70), 5, 10);
+	n->pe->Initialize(Vector2(-100, -200), Vector2(100, -100), -5, 5, 200, 255, 10, 25, 2, 3);
+
 	return n;
 }
 
@@ -184,6 +196,11 @@ static Nature* GetRandomStump() {
 
 	n->SetCollisionBound(cs);
 	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::STUMP));
+
+	//set pe
+	SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
+	n->pe = new ParticleEmitter(t2, Color(140, 40, 0), Color(170, 70, 40), 5, 10);
+	n->pe->Initialize(Vector2(-100, -200), Vector2(100, -100), -5, 5, 200, 255, 10, 25, 2, 3);
 
 	return n;
 }
@@ -226,6 +243,11 @@ static Nature* GetRandomBush() {
 	
 	n->SetCollisionBound(cs);
 	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::BUSH));
+
+	//set pe
+	SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
+	n->pe = new ParticleEmitter(t2, Color(60, 130, 60), Color(100, 255, 100), 5, 10);
+	n->pe->Initialize(Vector2(-100, -200), Vector2(100, -100), -5, 5, 200, 255, 10, 25, 2, 3);
 
 	return n;
 }

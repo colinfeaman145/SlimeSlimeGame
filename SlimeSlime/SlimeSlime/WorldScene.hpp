@@ -14,6 +14,10 @@
 #include "Container.hpp"
 #include "Button.hpp"
 
+#define GRID_WIDTH 10000
+#define GRID_HEIGHT 10000
+#define CELL_SIZE 200
+
 class WorldScene : public Scene {
 public:
     WorldScene();
@@ -58,8 +62,10 @@ public:
 
     void InitializeStructureHUD();
     Container* MakeStructureCard(int i);
+    void InitializeUI();
 
 private:
+    bool gameRunning;
     float time;
     float spawnCooldown;
     float currentSpawnTime;
@@ -68,7 +74,6 @@ private:
     EnemySpawner* spawner;
     GridCoord currentHoveredCellCoords;
     int lastHoveredStructure;
-    Structure* st;
     Structure* wallHwood;
     Structure* wallVwood;
     Structure* wallHstone;
@@ -78,6 +83,7 @@ private:
     FireTrap* fireTrap;
     FreezeTrap* freezeTrap;
     ExplosionTrap* explosionTrap;
+    Structure* atlas;
 
     int currentStructure;
     bool isStone;
@@ -110,6 +116,11 @@ private:
     int trapDamageLevel;
     Text* upTrapCooldownLabel;
     int trapCooldownLevel;
+
+    Container* gameOverScreen;
+    Container* playerDeathScreen;
+    float respawnTimer;
+    Text* respawnTimerText;
 
 };
 

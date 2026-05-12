@@ -12,7 +12,7 @@ using namespace std;
 class Button : public Sprite {
 public:
     Button(int x, int y, int w, int h, Color fillColor, Color hoverFillColor, Color borderColor, 
-        Color borderHoverColor, int borderThickness, function<void()> onClick, float hoverScale);
+        Color borderHoverColor, int borderThickness, function<void()> onClick, float hoverScale, float alpha = 255);
 
     void Process(float deltaTime) override;
     void Draw(Renderer* renderer) override;
@@ -22,10 +22,14 @@ public:
     void SetImage(Sprite* img);
     void SetBorderColor(Color c);
 
+    int GetWidth() const override { return w; };
+    int GetHeight() const override { return h; };
+
 private:
     int x, y, w, h;
     Color fillColor, hoverFillColor;
     Color borderColor, borderHoverColor;
+    float alpha;
     int borderThickness;
     function<void()> onClick;
     bool isHovered;

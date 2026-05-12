@@ -104,6 +104,7 @@ class Collidable {
 
         vector<Enemy*> targetedBy;
         virtual ~Collidable();
+        virtual void ClearTargetedBy();
         virtual CollisionShape& GetCollisionBound() { return collisionBound; }
         virtual inline void SetCollisionBound(CollisionShape cs) { collisionBound = cs; }
         virtual bool CanCollide() const { return canCollide; }

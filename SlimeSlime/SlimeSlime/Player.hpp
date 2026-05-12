@@ -27,8 +27,11 @@ class Player : public Entity {
 		void AddStone(int amount);
 		void RemoveStone(int amount);
 		bool HasEnoughStone(int amount);
-		void IncreaseMaxHealth(int amount);
 		int GetStone() const { return stone; }
+		void IncreaseMaxHealth(int amount);
+		void DecreaseHealCooldownByPercent(float amount);
+		void Damage(float amount) override;
+		void Heal(int amount) override;
 		bool CanMakeRecipe(unordered_map<ResourceType, int> recipe);
 		void RemoveRecipeCost(unordered_map<ResourceType, int> recipe);
 
@@ -42,6 +45,10 @@ class Player : public Entity {
 		int stone;
 		int itemPickupRadius;
 		PercentageBar* cooldownBar;
+
+		float healCooldown;
+		float healAmount;
+		float onHitHealCooldownAdd;
 };
 
 #endif

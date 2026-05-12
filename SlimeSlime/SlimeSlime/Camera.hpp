@@ -5,7 +5,7 @@
 
 #define WIDTH 800
 #define HEIGHT 600
-#define CAM_SPEED 50
+#define CAM_SPEED 10
 #define RENDER_DISTANCE 10
 
 class Camera {

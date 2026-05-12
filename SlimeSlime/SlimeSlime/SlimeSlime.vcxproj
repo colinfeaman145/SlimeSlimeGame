@@ -162,8 +162,10 @@
     <ClCompile Include="GridPathfinding.cpp" />
     <ClCompile Include="GridStructureManager.cpp" />
     <ClCompile Include="GridWallManager.cpp" />
+    <ClCompile Include="HowToPlayScene.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MainMenuScene.cpp" />
     <ClCompile Include="Nature.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
@@ -181,6 +183,7 @@
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="WorldSceneHoverAffect.cpp" />
     <ClCompile Include="WorldSceneInitializeStructureHUD.cpp" />
+    <ClCompile Include="WorldSceneInitializeUI.cpp" />
     <ClCompile Include="WorldSceneLoadSounds.cpp" />
     <ClCompile Include="WorldSceneReadInputs.cpp" />
     <ClCompile Include="WorldSceneUpgrades.cpp" />
@@ -211,7 +214,9 @@
     <ClInclude Include="Grid.hpp" />
     <ClInclude Include="GridCell.hpp" />
     <ClInclude Include="GridCoord.hpp" />
+    <ClInclude Include="HowToPlayScene.hpp" />
     <ClInclude Include="InputManager.hpp" />
+    <ClInclude Include="MainMenuScene.hpp" />
     <ClInclude Include="Nature.hpp" />
     <ClInclude Include="NatureType.hpp" />
     <ClInclude Include="Particle.hpp" />

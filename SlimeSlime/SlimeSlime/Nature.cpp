@@ -12,10 +12,12 @@ void Nature::Initialize(Sprite* spr, NatureType t, bool canCollide) {
 
 void Nature::Draw(Renderer* renderer) {
 	Entity::Draw(renderer);
+	pe->Draw(renderer);
 }
 
 void Nature::Process(float deltaTime) {
 	Entity::Process(deltaTime);
+	pe->Process(deltaTime);
 }
 
 void Nature::Damage(float amount) {
@@ -26,7 +28,8 @@ void Nature::Damage(float amount) {
 	if(health <= 0)
 		Break(); //no drops unless broke by player
 
-	//playsound
+	//aesthetics!!
+	if(type != NatureType::FOLIAGE) pe->Burst(5);
 	switch (type) {
 		case(NatureType::TREE):
 		case(NatureType::STUMP):

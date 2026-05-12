@@ -1,13 +1,29 @@
 #include "Grid.hpp"
 #include "Foliage.hpp"
 
-bool Grid::CanPlaceStructure(GridCoord coord) const {
+bool Grid::CanPlaceStructure(GridCoord coord) {
     if (!IsValidCoord(coord)) return false;
-    return !cells[coord.row][coord.col]->HasStructure();
+    if (cells[coord.row][coord.col]->HasStructure()) return false;
+
+    //build an AABB for the target cell(some tolerance)
+    CollisionShape cellShape = CollisionShape::MakeAABB(cellSize * 0.85, cellSize * 0.85, Vector2(cellSize * 0.125, cellSize * 0.125));
+    Vector2 cellPos = GridToWorld(coord);
+
+    for (Collidable* n : context.grid->GetNearbyCollidables(coord, 1)) {
+        if (n->GetCollidableType() != CollidableType::NATURE) continue;
+        if (dynamic_cast<Foliage*>(n)) continue;//ignore foliage
+
+        Vector2 penetration;
+        if (Collision::TestShapes(cellShape, cellPos, n->GetCollisionBound(), n->GetPosition(), penetration))
+            return false; //collision box actually overlaps the cell
+    }
+    return true;
 }
 
-bool Grid::PlaceStructure(Structure* structure, GridCoord coord) {
-    if (!CanPlaceStructure(coord)) return false;
+Structure* Grid::PlaceStructure(Structure* structure, GridCoord coord, bool hologram) {
+    if (!IsValidCoord(coord)) return nullptr;
+    if (cells[coord.row][coord.col]->HasStructure()) return nullptr; //always block if structure present
+    if (!hologram && !CanPlaceStructure(coord)) return nullptr; //only collidable check for real placements
 
     Structure* s = structure->Clone();
     s->GetSprite()->SetDrawSize(cellSize, cellSize);
@@ -15,14 +31,14 @@ bool Grid::PlaceStructure(Structure* structure, GridCoord coord) {
     s->SetPosition(GridToWorld(coord));
     s->GetSprite()->SetDrawLayer(RenderLayer::STRUCTURES);
 
-    vector<Collidable*> collidables = GetNearbyCollidables(coord, 2);
-    for (Collidable* c : collidables) {//remove folaige where wall placed
-        if (Foliage* f = dynamic_cast<Foliage*>(c)) {
-            ResolveCollisions(f);
+    if (!hologram) {
+        vector<Collidable*> nearby(GetNearbyCollidables(coord, 2)); //remove foliage when placed
+        for (Collidable* c : nearby) {
+            if (Foliage* f = dynamic_cast<Foliage*>(c))
+                ResolveCollisions(f);
         }
     }
-
-    return true;
+    return s;
 }
 
 bool Grid::RemoveStructure(GridCoord coord) {
@@ -31,7 +47,10 @@ bool Grid::RemoveStructure(GridCoord coord) {
     GridCell* cell = cells[coord.row][coord.col];
     if (!cell->HasStructure()) return false;
 
+    bool isAtlas = cell->GetStructure() == atlas;
+
     cell->RemoveStructure();
+    if (isAtlas) atlas = nullptr;
     return true;
 }
 

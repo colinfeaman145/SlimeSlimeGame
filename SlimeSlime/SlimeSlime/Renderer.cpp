@@ -79,7 +79,7 @@ void Renderer::DrawTexture(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* ds
 }
 
 void Renderer::BeginFrame() {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_SetRenderDrawColor(renderer, 10, 10, 50, 255);
     SDL_RenderClear(renderer);
 }
 

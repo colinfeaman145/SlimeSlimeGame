@@ -2,6 +2,10 @@
 #include "Enemy.hpp"
 
 Collidable::~Collidable() {
+    ClearTargetedBy();
+}
+
+void Collidable::ClearTargetedBy() {
     vector<Enemy*> copy = targetedBy;
     for (Enemy* t : copy)
         t->SetTarget(nullptr);

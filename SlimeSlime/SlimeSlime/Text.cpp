@@ -16,6 +16,7 @@ bool Text::Initialize(const string& inputText, const string& inputFontPath, int 
     text = inputText;
     fontPath = inputFontPath;
     pointSize = inputPointSize;
+    fontStyle = TTF_STYLE_NORMAL;
 
     SetDrawLayer(RenderLayer::UI);
 
@@ -26,7 +27,10 @@ bool Text::BuildTexture() {
     TTF_Font* font = context.fm->GetFont(fontPath, pointSize);
     if (!font) return false;
 
+    TTF_SetFontStyle(font, fontStyle);
     SDL_Surface* surface = TTF_RenderText_Blended(font, text.c_str(), textColor);
+    TTF_SetFontStyle(font, TTF_STYLE_NORMAL); //reset
+
     if (!surface) {
         cerr << "Text: TTF_RenderText_Blended failed: " << TTF_GetError() << endl;
         return false;
@@ -63,4 +67,14 @@ void Text::SetFontSize(int size) {
 
 int Text::GetFontSize() {
     return pointSize;
+}
+
+/* OPTIONS
+* TTF_STYLE_BOLD
+* TTF_STYLE_NORMAL
+* TTF_STYLE_UNDERLINE
+*/
+void Text::SetFontStyle(int style) {
+    fontStyle = style;
+    BuildTexture();
 }

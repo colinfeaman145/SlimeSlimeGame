@@ -88,7 +88,6 @@ void Grid::Draw(Renderer* renderer) {
         for (int col = minCol; col <= maxCol; ++col)
             cells[row][col]->Draw(renderer);
 
-    if(atlas) atlas->Draw(renderer);
 }
 
 void Grid::Process(float deltaTime) {
@@ -114,8 +113,6 @@ void Grid::Process(float deltaTime) {
             }
         }
     }
-
-    if(atlas) atlas->Process(deltaTime);
 }
 
 

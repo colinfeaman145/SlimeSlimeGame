@@ -2,6 +2,8 @@
 #include <SDL_image.h>
 #include "game.hpp"
 #include "WorldScene.hpp"
+#include "MainMenuScene.hpp"
+#include "HowToPlayScene.hpp"
 
 /*
 CALL PIPELINE
@@ -18,14 +20,10 @@ Game::Game() {
     context.renderer->Initialize("Slime Slime Game", WIDTH, HEIGHT, false);
     context.txm = new TextureManager();
     context.fm = new FontManager();
-    context.grid = new Grid(15000, 10000, 100);
-    SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
-    context.grid->Initialize(grassTex);
-    context.am = new AudioManager();
-    context.am->Initialize({0, 0, 0 });
     context.im = new InputManager();
     context.im->Initialize("../../data/inputs.json");
     context.gameDifficulty = (int)Difficulty::NORMAL;
+    context.changeScene = [this](int i) { this->ChangeScene(i); };
 
     currentScene = 0;
     running = true;
@@ -44,17 +42,19 @@ Game::~Game() {
 
 //add scenes to game
 bool Game::Initialize() {
-    Scene* pScene;
-    Scene* pScene2;
 
-    // scene 1
-    pScene = new WorldScene();
-    pScene->Initialize();
-    scenes.push_back(pScene);
-    //// scene 2
-    //pScene2 = new WorldScene();
-    //pScene2->Initialize(context);
-    //scenes.push_back(pScene2);
+    scenes.resize(4, nullptr);
+
+    Scene* menu;
+    Scene* htp;
+
+    menu = new MainMenu();
+    menu->Initialize();
+    scenes[0] = (menu);
+
+    htp = new HowToPlay();
+    htp->Initialize();
+    scenes[1] = (htp);
 
     return true;
 }
@@ -71,6 +71,8 @@ void Game::Run() {
         Process(deltaTime);
         Draw();
     }
+
+    SDL_Quit();
 }
 
 void Game::Process(float deltaTime) {
@@ -84,12 +86,12 @@ void Game::Process(float deltaTime) {
         }
 
         context.im->HandleEvent(event);
-        if(context.im->IsKeyDown("change_scene")){
-            currentScene++;
-            if (currentScene >= (int)scenes.size()) {
-                currentScene = 0;
-            }
-        }
+        //if(context.im->IsKeyDown("change_scene")){
+        //    currentScene++;
+        //    if (currentScene >= (int)scenes.size()) {
+        //        currentScene = 0;
+        //    }
+        //}
     }
 
     scenes[currentScene]->Process(deltaTime);
@@ -104,3 +106,19 @@ void Game::Draw()
 
 void Game::Cleanup() 
 {}
+
+void Game::ChangeScene(int s) {
+    if (s == -1) Quit();
+    if (s == 2) {//load new game scene when switched to
+        Scene* scene = new WorldScene();
+        scene->Initialize();
+        scenes[2] = (scene);
+    }
+
+    if (s < 0 || s >= (int)scenes.size()) return;
+    currentScene = s;
+}
+
+void Game::Quit() {
+    running = false;
+}

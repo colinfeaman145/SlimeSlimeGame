@@ -10,13 +10,16 @@ void Player::Initialize(Vector2 pos, int pullRadius, Vector2 vel, AnimatedSprite
 	collideType = CollidableType::PLAYER;
 
 	coins = 0;
-	wood = 100;
+	wood = 25;
 	stone = 0;
 	if (GOD_MODE) {
 		coins = 10000000;
 		wood = 10000;
 		stone = 10000;
+		SetHealth(1000000);
 	}
+	healAmount = maxHealth / 20;
+	onHitHealCooldownAdd = 10;
 
 	Vector2 size = sprite->GetDrawSize();
 	healthBar = new PercentageBar(health, maxHealth, size.x * 1.1, size.y * 0.2, { 255, 50, 50 }, { 150, 50, 50 });
@@ -34,8 +37,11 @@ void Player::Draw(Renderer* renderer) {
 }
 
 void Player::Process(float deltaTime) {
-	Entity::Process(deltaTime);
+
 	context.am->Process(position, deltaTime);//listen for audio
+
+	if (!IsAlive()) return;
+	Entity::Process(deltaTime);
 
 	//update sprite
 	if (sprite) {
@@ -63,8 +69,23 @@ void Player::Process(float deltaTime) {
 		//set character to rotate with attack cone
 		sprite->SetRotation(attackCone->GetSprite()->GetRotation());
 	}
+
+	//heal if possible
+	healCooldown -= deltaTime;
+	if (healCooldown < 0) {
+		Heal(healAmount);
+		healCooldown += onHitHealCooldownAdd / 10.0f;
+	}
 }
 
+void Player::Damage(float amount) {
+	Entity::Damage(amount);
+	healCooldown = onHitHealCooldownAdd;
+}
+
+void Player::Heal(int amount) {
+	Entity::Heal(amount);
+}
 
 void Player::SetAttackCone(AttackCone* ac) {
 	attackCone = ac;
@@ -122,6 +143,11 @@ void Player::IncreaseMaxHealth(int amount) {
 	float healthPercent = health / maxHealth;
 	maxHealth += amount;
 	health = maxHealth * healthPercent;
+	healAmount = maxHealth / 20;
+}
+
+void Player::DecreaseHealCooldownByPercent(float amount) {
+	onHitHealCooldownAdd -= onHitHealCooldownAdd * amount;
 }
 
 bool Player::CanMakeRecipe(unordered_map<ResourceType, int> recipe) {

@@ -49,8 +49,9 @@ public:
 	void Rotate(float direction);
 	bool IsAlive() const;
 	virtual void SetDead();
+	void SetAlive();
 	virtual void Damage(float amount) override;
-	void Heal(int amount);
+	virtual void Heal(int amount);
 	float GetRadius();
 	Vector2 GetFacingDirection();
 	Vector2 GetPosition() const override; 

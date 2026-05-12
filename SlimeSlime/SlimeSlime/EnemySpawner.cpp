@@ -130,7 +130,7 @@ void EnemySpawner::InitSprites() {
 
 		spr->Initialize(tex, frameWidth, frameHeight, srcX, srcY, 100, 100, 14, 14);
 		spr->SetDrawLayer(RenderLayer::ENEMIES);
-		spr->SetFrameDuration(0.15);
+		spr->SetFrameDuration(0.075);
 		spr->SetLooping(false);
 		spr->SetLeaveOnLastFrame(true);
 
@@ -277,6 +277,6 @@ EnemyType EnemySpawner::StringToEnemyType(const string& str) {
 	throw runtime_error("unknown enemy type: " + str);
 }
 
-
-//Create enemy spawner in scene
-//Fill data documents with pools and attributes
+AnimatedSprite* EnemySpawner::GetSprite(EnemyType type) {
+	return moving.at(type);
+}

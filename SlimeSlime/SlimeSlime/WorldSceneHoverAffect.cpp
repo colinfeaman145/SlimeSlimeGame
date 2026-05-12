@@ -43,7 +43,7 @@ void WorldScene::UpdateHoverColor(GridCell* cell, bool canAfford) {
         }
     }
     else {//structures
-        if (cell->HasStructure()) {
+        if (!context.grid->CanPlaceStructure(cell->GetCoords())) {
             cell->GetStructure()->GetSprite()->SetColor(c);
             cell->GetStructure()->GetSprite()->SetAlpha(alpha);
         }
@@ -75,21 +75,29 @@ void WorldScene::ApplyHoverEffect(GridCell* cell, bool canAfford) {
             cell->GetWall(dir)->GetSprite()->SetAlpha(200);
         }
     }
-    else {//structures
-        if (cell->HasStructure())//trying to place structure where there already is one
-            cell->GetStructure()->GetSprite()->SetColor({ 255, 100, 100 }); //highlight red
-        else {//no structure
-            cell->SetHoldingHologramStruct(true);
-            PlaceStructure(true);
-            cell->GetStructure()->GetSprite()->SetColor({ 100, 100, 255 });
-            cell->GetStructure()->GetSprite()->SetAlpha(100);
-        }
-
-        if (!canAfford) {
+    else { //structures
+        if (cell->HasStructure()) {
             cell->GetStructure()->GetSprite()->SetColor({ 255, 100, 100 });
-            cell->GetStructure()->GetSprite()->SetAlpha(100);
+        }
+        else {
+            bool blocked = !context.grid->CanPlaceStructure(cell->GetCoords());
+            cell->SetHoldingHologramStruct(true);
+            PlaceStructure(true); // places hologram even if blocked by nature
+            if (!cell->GetStructure()) {
+                cell->SetHoldingHologramStruct(false);
+                return;
+            }
+            if (blocked || !canAfford) {
+                cell->GetStructure()->GetSprite()->SetColor({ 255, 100, 100 }); //highlight red
+                cell->GetStructure()->GetSprite()->SetAlpha(200);
+            }
+            else {
+                cell->GetStructure()->GetSprite()->SetColor({ 100, 100, 255 });
+                cell->GetStructure()->GetSprite()->SetAlpha(100);
+            }
         }
     }
+
 
     return;
 }

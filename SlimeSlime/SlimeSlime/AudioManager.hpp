@@ -13,7 +13,7 @@ using namespace std;
 class AudioManager {
 public:
     AudioManager() = default;
-    bool Initialize(const FMOD_VECTOR& listenerPos);
+    bool Initialize(const FMOD_VECTOR& listenerPos, float startDelay = 5);
     void Process(Vector2 pos, float deltaTime);
     void Cleanup();
 
@@ -27,8 +27,9 @@ public:
     void SetGroupPaused(const string& name, bool paused);
     bool IsGroupPaused(const string& name);
     void StopGroup(const string& name);
+    void StopMusic();
 
-    bool LoadMusicTrack(const string& name, const string& path);
+    bool LoadMusicTrack(const string& path, const string& name);
     void PlayMusic(const string& soundName);
     void ProcessMusic();
     bool IsSoundPlaying();
@@ -46,6 +47,10 @@ private:
     vector<string> musicTracks;
     string currentTrack;
     Channel* musicChannel = nullptr;
+    float musicFadeTimer;
+    float musicFadeDuration;
+    bool betweenSongs;
+    float songBreakTimer;
 };
 
 #endif

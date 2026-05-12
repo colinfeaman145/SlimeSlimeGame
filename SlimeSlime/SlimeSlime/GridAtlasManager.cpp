@@ -2,7 +2,8 @@
 
 
 Structure* Grid::GetAtlas() {
-	return atlas;
+	if (!atlas) return nullptr;
+	else return atlas;
 }
 
 void Grid::SetAtlas(Structure* a) {

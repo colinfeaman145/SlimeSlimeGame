@@ -62,6 +62,7 @@ public:
     void SetNaturePosition(Nature* n);
     void PlaceNature(Nature* nature);
     void RemoveNature(Nature* nature);
+    vector<Nature*> GetNatureObjects();
 
     //drops
     void AddDrop(Resource* drop);

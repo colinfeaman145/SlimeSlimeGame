@@ -8,74 +8,58 @@ WorldScene::~WorldScene() {
 }
 
 bool WorldScene::Initialize() {
+    elements.clear();
+    UI.clear();
+    gameRunning = true;
     currentStructure = 1;
     isStone = false;
     buildMode = false;
     currentHoveredCellCoords = { -1, -1 };
     lastHoveredStructure = -1;
     spawnCooldown = 2.0f;
-    currentSpawnTime = spawnCooldown;
+    currentSpawnTime = context.gameDifficulty / 5;
 
-    ////make explosion animated entity
-    //SDL_Texture* t = context.txm->LoadTexture(context.renderer, "../../assets/explosion.png");
-    //AnimatedSprite* s = new AnimatedSprite();
-    //s->SetFrameDuration(explosionFrameTime);
-    //s->SetLooping(true);
-    //s->Initialize(t, 66, 66, 0, 0, 100, 100, 5, 5);
-    //explosion = new Entity();
-    //explosion->Initialize(s, Vector2(100, 50), Vector2(0, 0));
-    //explosion->GetSprite()->SetColor(color(0, 255, 0));
-    //elements.push_back(explosion);
+    context.grid = new Grid(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE);
+    SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
+    context.grid->Initialize(grassTex);
 
-    //explosion2 = new Entity();
-    //SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/ball.png");
-    //Sprite* s2 = new Sprite();
-    //s2->Initialize(t2, 307, 307, 0, 0, 100, 100);
-    //explosion2->Initialize(s2, Vector2(200, 150), Vector2(5, 0));
-    //elements.push_back(explosion2);
+    uniform_int_distribution<int> spawnXGen(GRID_WIDTH * 0.25, GRID_WIDTH * 0.75);
+    uniform_int_distribution<int> spawnYGen(GRID_HEIGHT * 0.25, GRID_HEIGHT * 0.75);
+    Vector2 spawnPos = Vector2(spawnXGen(gen), spawnYGen(gen));
 
-    //make particle emitter
-    //SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/sad.png");
-    //ParticleEmitter* pe = new ParticleEmitter(t2, color(255, 255, 255), color(255, 255, 255), 278, 278);
-    //pe->Initialize(Vector2(-200, -500), Vector2(200, -200), -5, 5, 200, 255, 10, 25, 3, 5);
-    //pe->SetPosition(Vector2(300, 400));
-    //pe->StartSpawning(.2);
-    ////pe->Burst(100);
-    //elements.push_back(pe);
+    context.am->StopMusic();
+    context.am = new AudioManager();
+    context.am->Initialize({ 0, 0, 0 }, 7);
 
-    //make text
-    //text = new Text();
-    //text->Initialize(&renderer, txm, fm, "Fart", "../../fonts/PROXON.ttf", 32);
-    //text->SetPosition(500, 300);
-    //text->SetRotation(30);
-    //text->SetColor(struct color(255, 150, 0)); 
-    //elements.push_back(text);
 
     //make sound
     AudioManager* am = context.am;
-
     LoadSounds();
-    //am->SetGroupPitch("Default", 2);
-    //am->LoadSound("../../assets/perfect-fart.ogg", "Fart");
-    //am->PlaySound("Fart", "Default", {100, 100, 0}, {0, 0, 0});
 
     //push grid
     elements.push_back(context.grid);
 
     SDL_Texture* squareTex = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
 
-    //make strucutre
-    st = new Structure();
-    SDL_Texture* structTex = context.txm->LoadTexture(context.renderer, "../../assets/explosion.png");
-    AnimatedSprite* structSpr = new AnimatedSprite();
-    structSpr->SetFrameDuration(1);
-    structSpr->SetLooping(true);
-    structSpr->Initialize(structTex, 66, 66, 0, 0, 100, 100, 5, 5);
-    st->Initialize(structSpr, false);
-
-    context.grid->SetAtlas(st);
-    st->SetPosition(Vector2(7750, 5300));
-    elements.push_back(st);
+    //make atlas
+    atlas = new Structure();
+    SDL_Texture* atlasTex = context.txm->LoadTexture(context.renderer, "../../assets/traps/atlas.png");
+    AnimatedSprite* atlasSpr = new AnimatedSprite();
+    atlasSpr->Animate();
+    atlasSpr->SetFrameDuration(0.35);
+    atlasSpr->SetLooping(true);
+    atlasSpr->Initialize(atlasTex, 125, 125, 0, 0, 100, 100, 4, 16);
+    atlas->Initialize(atlasSpr, false);
+    atlas->SetHealth(500);
+    atlas->SetCanCollide(true);
+    Structure* temp;
+    while (!(temp = context.grid->PlaceStructure(atlas, context.grid->WorldToGrid(Vector2(spawnPos.x, spawnPos.y - CELL_SIZE)), false))) {
+        spawnPos = Vector2(spawnXGen(gen), spawnYGen(gen));
+    }
+    atlas = temp;
+    context.grid->SetAtlas(atlas);
+    int size = atlas->GetSprite()->GetWidth();
+    atlas->SetCollisionBound(CollisionShape::MakeAABB(size * 0.9, size * 0.9, Vector2(size * 0.05, size * 0.05)));
 
     //make walls
     wallHwood = new Structure();
@@ -139,13 +123,13 @@ bool WorldScene::Initialize() {
     playerBSprite->SetFrameDuration(0.25);
     playerBSprite->SetLooping(true);
     playerBSprite->SetLeaveOnLastFrame(true);
-    player->Initialize(Vector2(0, 0), 100, Vector2(0, 0), playerBSprite);//7500 5000
+    player->Initialize(Vector2(spawnPos.x, spawnPos.y + CELL_SIZE), 100, Vector2(0, 0), playerBSprite);
     player->SetMovementSpeed(300);
     context.grid->UpdateOccupancy((Entity*)player, &GridCell::AddOther, &GridCell::RemoveOther);
     elements.push_back(player);
 
     //make attackCone
-    AttackCone* attackCone = new AttackCone(15, 200, PI / 5, 0.75);
+    AttackCone* attackCone = new AttackCone(17, 200, PI / 5, 0.75);
     SDL_Texture* swooshTex = context.txm->LoadTexture(context.renderer, "../../assets/swoosh.png");
     AnimatedSprite* swooshSpr = new AnimatedSprite();
     swooshSpr->SetFrameDuration(0.02);
@@ -161,55 +145,41 @@ bool WorldScene::Initialize() {
     spawner->Initialize("../../data/enemyStats.txt", "../../data/spawnPools.json");
     elements.push_back(spawner);
 
-    //UI
-    //wood
-    int resourceSize = WIDTH * 0.04;
-    SDL_Texture* woodTex = context.txm->LoadTexture(context.renderer, "../../assets/log.png");
-    Sprite* woodIcon = new Sprite();
-    woodIcon->Initialize(woodTex, 410, 261, 0, 0, resourceSize, resourceSize);
-    woodIcon->SetDrawLayer(RenderLayer::UI);
-    woodIcon->SetPosition(Vector2(10, 10));
-    UI.push_back(woodIcon);
-
-    woodCount = new Text();
-    woodCount->Initialize("0", "../../fonts/PROXON.ttf", resourceSize);
-    woodCount->SetPosition(50, 15);
-    UI.push_back(woodCount);
-
-    //stone
-    SDL_Texture* stoneTex = context.txm->LoadTexture(context.renderer, "../../assets/stone.png");
-    Sprite* stoneIcon = new Sprite();
-    stoneIcon->Initialize(stoneTex, 404, 334, 0, 0, resourceSize, resourceSize);
-    stoneIcon->SetDrawLayer(RenderLayer::UI);
-    stoneIcon->SetPosition(Vector2(10, 50));
-    UI.push_back(stoneIcon);
-
-    stoneCount = new Text();
-    stoneCount->Initialize("0", "../../fonts/PROXON.ttf", resourceSize);
-    stoneCount->SetPosition(50, 55);
-    UI.push_back(stoneCount);
-
-    //coin
-    SDL_Texture* coinTex = context.txm->LoadTexture(context.renderer, "../../assets/coin.png");
-    Sprite* coinIcon = new Sprite();
-    coinIcon->Initialize(coinTex, 2195, 2195, 0, 0, resourceSize, resourceSize);
-    coinIcon->SetDrawLayer(RenderLayer::UI);
-    coinIcon->SetPosition(Vector2(10, 90));
-    UI.push_back(coinIcon);
-
-    coinCount = new Text();
-    coinCount->Initialize("0", "../../fonts/PROXON.ttf", resourceSize);
-    coinCount->SetPosition(50, 95);
-    UI.push_back(coinCount);
-
-    InitializeUpgradeContainer();
-    InitializeStructureHUD();
+    InitializeUI();
 
     return true;
 }
 
 
 void WorldScene::Process(float deltaTime) {
+
+    //is game over
+    if ((!atlas || atlas->IsBroken()) && gameRunning) {
+        player->SetDead();
+        gameOverScreen->Toggle();
+        atlas = nullptr;
+        gameRunning = false;
+    }
+    else if(gameRunning){
+        atlas->Process(deltaTime);
+    }
+
+    //is player dead
+    if (!player->IsAlive() && gameRunning && respawnTimer <= 0) {
+        playerDeathScreen->Toggle();
+        respawnTimer = 20;
+        player->RemoveCoins(player->GetCoins() / 2);//remove half of coins
+        player->ClearTargetedBy();
+    }
+    if (respawnTimer > 0) {
+        respawnTimer -= deltaTime;
+        respawnTimerText->SetText(to_string((int)respawnTimer) + " seconds");
+    }
+    if (respawnTimer <= 0 && !player->IsAlive()) {
+        playerDeathScreen->Toggle();
+        player->Heal(player->GetMaxHealth());
+        player->SetAlive();
+    }
 
     currentSpawnTime -= deltaTime;
     time += deltaTime;
@@ -224,7 +194,7 @@ void WorldScene::Process(float deltaTime) {
     }
     UpdateUpgradeLabelColor();
 
-    ReadInputs(deltaTime);
+    if(player->IsAlive()) ReadInputs(deltaTime);
     context.im->SetIsMouseOverUI(false);
 
     for (Element* e : elements) {
@@ -232,7 +202,7 @@ void WorldScene::Process(float deltaTime) {
     }
 
     //spawn enemies
-    if (currentSpawnTime < 0) {
+    if (currentSpawnTime < 0 && gameRunning) {
         spawner->SpawnEnemies();
         currentSpawnTime = spawnCooldown;
     }
@@ -257,6 +227,10 @@ void WorldScene::Draw(Renderer* renderer) {
     for (Sprite* s : UI) {
         s->Draw(renderer);
     }
+    if (atlas && !atlas->IsBroken())
+        atlas->Draw(renderer);
+    else
+        atlas = nullptr;
 }
 
 Entity* WorldScene::GetPlayer() {
@@ -291,11 +265,12 @@ void WorldScene::PlaceStructure(bool isHologram) {
         context.grid->PlaceWall(coord, WallDirection::WEST, s);
     }
     else if (currentStructure >= 3) {
-        occupied = context.grid->GetCell(coord)->HasStructure();
-        context.grid->PlaceStructure(s, coord);
+        occupied = !context.grid->CanPlaceStructure(coord);
+        Structure* placed = context.grid->PlaceStructure(s, coord, isHologram);
+        if (!placed) occupied = true;
     }
 
-    if(occupied) context.am->PlaySound("CantPlace", "Default", { player->GetPosition().x, 100, player->GetPosition().y }, { 0, 0, 0 }, Vector2(1, 1));
+    if(!isHologram && occupied) context.am->PlaySound("CantPlace", "Default", { player->GetPosition().x, 100, player->GetPosition().y }, { 0, 0, 0 }, Vector2(1, 1));
     if (isHologram || occupied) { //only take payment if real and can place
         return;
     }

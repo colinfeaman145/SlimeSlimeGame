@@ -1,14 +1,15 @@
 #include "Button.hpp"
 
 Button::Button(int x, int y, int w, int h, Color fillColor, Color hoverFillColor, Color borderColor, 
-    Color borderHoverColor, int borderThickness, function<void()> onClick, float hoverScale)
+    Color borderHoverColor, int borderThickness, function<void()> onClick, float hoverScale, float alpha)
     : x(x), y(y), w(w), h(h)
     , fillColor(fillColor), hoverFillColor(hoverFillColor)
     , borderColor(borderColor), borderHoverColor(borderHoverColor)
     , borderThickness(borderThickness)
     , onClick(onClick)
     , isHovered(false)
-    , hoverScale(hoverScale) {
+    , hoverScale(hoverScale)
+    , alpha(alpha) {
     SetDrawLayer(RenderLayer::UI);
 }
 
@@ -57,7 +58,7 @@ void Button::Draw(Renderer* renderer) {
     }
 
     //draw border as outer filled rect
-    renderer->AddFilledRect(drawX, drawY, drawW, drawH, currentBorder, 255, RenderLayer::UI);
+    renderer->AddFilledRect(drawX, drawY, drawW, drawH, currentBorder, alpha, RenderLayer::UI);
 
     //draw filled inset by border thickness
     renderer->AddFilledRect(
@@ -65,7 +66,7 @@ void Button::Draw(Renderer* renderer) {
         drawY + borderThickness,
         drawW - borderThickness * 2,
         drawH - borderThickness * 2,
-        currentFill, 255, RenderLayer::UI);
+        currentFill, alpha, RenderLayer::UI);
 }
 
 void Button::SetPosition(int x, int y) { 

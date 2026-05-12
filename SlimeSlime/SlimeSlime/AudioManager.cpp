@@ -2,11 +2,15 @@
 #include "GameContext.hpp"
 #include "Grid.hpp"
 
-bool AudioManager::Initialize(const FMOD_VECTOR& pos) {
+bool AudioManager::Initialize(const FMOD_VECTOR& pos, float startDelay) {
     System_Create(&system);
     system->init(512, FMOD_INIT_NORMAL, nullptr);
     system->set3DListenerAttributes(0, &pos, nullptr, nullptr, nullptr);
     system->set3DSettings(1.0f, context.grid->GetCellSize() / 10, 2.0f);
+
+    betweenSongs = true;
+    songBreakTimer = startDelay;
+    musicFadeDuration = 10;
 
     return true;
 }
@@ -18,11 +22,31 @@ void AudioManager::Process(Vector2 pos, float deltaTime) {
     for (auto& c : soundCooldown) {
         c.second -= deltaTime;
     }
+    songBreakTimer -= deltaTime;
+
+    //fade in music
+    if (musicChannel && musicFadeTimer < musicFadeDuration) {
+        musicFadeTimer += deltaTime;
+        float volume = min(musicFadeTimer / musicFadeDuration, 0.45f);//max volume
+        musicChannel->setVolume(volume);
+    }
+
     ProcessMusic();
 }
 
 void AudioManager::ProcessMusic() {
     if (IsSoundPlaying()) return; //still playing, do nothing
+
+    if (songBreakTimer > 0) return;
+    if (!betweenSongs) {//song ended
+        betweenSongs = true;
+        uniform_real_distribution<float> songDelayGen(10, 25);
+        songBreakTimer = songDelayGen(gen);
+
+        musicFadeTimer = 0;
+        return;
+    }
+    betweenSongs = false;
 
     if (musicTracks.empty()) return;
 
@@ -67,7 +91,7 @@ bool AudioManager::LoadSound(const string& filepath, const string& soundName) {
     return 1;
 }
 
-bool AudioManager::LoadMusicTrack(const string& name, const string& path) {
+bool AudioManager::LoadMusicTrack(const string& path, const string& name) {
     if (sounds.count(name)) return false;
 
     Sound* sound = nullptr;
@@ -81,6 +105,8 @@ void AudioManager::PlayMusic(const string& soundName) {
     if (!sounds.contains(soundName)) return;
 
     system->playSound(sounds[soundName], groups["Music"], true, &musicChannel);
+    musicChannel->setVolume(0.0f); // start silent
+    musicFadeTimer = 0.0f;         // reset fade
     musicChannel->setPaused(false);
 }
 
@@ -140,4 +166,11 @@ bool AudioManager::IsGroupPaused(const string& name) {
 void AudioManager::StopGroup(const string& name) {
     if (!groups.contains(name)) return;
     groups[name]->stop();
+}
+
+void AudioManager::StopMusic() {
+    if (!musicChannel) return;
+    musicChannel->stop();
+    musicChannel = nullptr;
+    musicFadeTimer = 0.0f;
 }

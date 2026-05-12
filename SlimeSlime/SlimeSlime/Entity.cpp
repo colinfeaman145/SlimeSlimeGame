@@ -93,6 +93,10 @@ void Entity::SetDead() {
     alive = false;
 }
 
+void Entity::SetAlive() {
+    alive = true;
+}
+
 void Entity::Damage(float amount) {
     health -= amount;
     if (health <= 0) SetDead();
@@ -104,6 +108,7 @@ void Entity::Heal(int amount) {
     health += amount;
     if (health >= maxHealth)
         health = maxHealth;
+    if (healthBar) healthBar->SetValues(health, maxHealth);
 }
 
 float Entity::GetRadius() {

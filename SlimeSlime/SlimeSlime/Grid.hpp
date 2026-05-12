@@ -54,8 +54,8 @@ public:
     void UpdateEnemyOccupancy(Enemy* enemy);
 
     //Structures
-    bool CanPlaceStructure(GridCoord coord) const;
-    bool PlaceStructure(Structure* structure, GridCoord coord);
+    bool CanPlaceStructure(GridCoord coord);
+    Structure* PlaceStructure(Structure* structure, GridCoord coord, bool hologram);
     bool RemoveStructure(GridCoord coord);
     bool RemoveStructure(Structure* structure);
     vector<Structure*> GetNearbyStructures(GridCoord coord, int radius);

@@ -57,6 +57,11 @@ static Foliage* GetRandomFoliage() {
 	n->SetCollisionBound(cs);
 	n->SetHealth(CalculateDurability(width, height, cellSize, NatureType::FOLIAGE));
 
+	//set pe
+	SDL_Texture* t2 = context.txm->LoadTexture(context.renderer, "../../assets/square.jpg");
+	n->pe = new ParticleEmitter(t2, Color(60, 130, 60), Color(100, 255, 100), 5, 10);
+	n->pe->Initialize(Vector2(-3, -2), Vector2(3, 1), -5, 5, 200, 255, 10, 25, .5, 1);
+
 	return n;
 }
 

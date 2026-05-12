@@ -205,6 +205,7 @@ void GridCell::SetNaturePosition(Nature* n) {
     Vector2 localOffset = Vector2(localLocationGen(gen), localLocationGen(gen));
     Vector2 worldPosition = position + localOffset;
     n->SetPosition(worldPosition);
+    n->pe->SetPosition(n->GetCenter());
 }
 
 void GridCell::PlaceNature(Nature* n) {
@@ -218,6 +219,10 @@ void GridCell::RemoveNature(Nature* n) {
         *it = nature.back();
         nature.pop_back();
     }
+}
+
+vector<Nature*> GridCell::GetNatureObjects() {
+    return nature;
 }
 
 
