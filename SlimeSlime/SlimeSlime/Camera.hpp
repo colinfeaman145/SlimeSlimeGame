@@ -3,10 +3,10 @@
 #include <SDL.h>
 #include "Vector2.hpp"
 
-#define WIDTH 800
-#define HEIGHT 600
+inline int WIDTH = 0;
+inline int HEIGHT = 0;
 #define CAM_SPEED 10
-#define RENDER_DISTANCE 10
+#define RENDER_DISTANCE 10 
 
 class Camera {
 public:

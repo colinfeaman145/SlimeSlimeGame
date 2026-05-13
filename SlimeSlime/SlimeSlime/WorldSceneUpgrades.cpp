@@ -18,7 +18,7 @@ void WorldScene::InitializeUpgradeContainer() {
             [this]() { this->ToggleUpgradeBox(); }, 1.05);
     UI.push_back(openUpgrades);
     Text* upgradeLabel = new Text();
-    upgradeLabel->Initialize("Upgrades", "../../fonts/PROXON.ttf", 30);
+    upgradeLabel->Initialize("Upgrades", "../../fonts/PROXON.ttf", WIDTH * 0.04);
     openUpgrades->SetImage(upgradeLabel);
 
     //upgrade box
@@ -194,7 +194,7 @@ void WorldScene::UpgradeAttackSpeed() {
     player->RemoveCoins(upgradeCost);
     AttackCone* cone = player->GetAttackCone();
     cone->DecreaseAttackCooldown(cone->GetCooldownTime() * 0.05);
-    player->SetMovementSpeed(player->GetMovementSpeed() * 0.05);
+    player->SetMovementSpeed(player->GetMovementSpeed() * 1.05);
 
     cooldownLevel++;
     upCooldownLabel->SetText("Agility( " + to_string(cooldownLevel) + " )");

@@ -175,7 +175,7 @@ PercentageBar* Entity::GetHealthBar() {
 void Entity::SetFlash(bool flash) {
     if (!sprite) return;
     sprite->SetIsFlashing(flash);
-    if (flash) flashDuration = 0.5f;
+    if (flash) flashDuration = 0.25f;
 }
 
 

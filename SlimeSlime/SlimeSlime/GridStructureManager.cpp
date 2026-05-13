@@ -71,9 +71,9 @@ bool Grid::RemoveStructure(Structure* structure) {
 vector<Structure*> Grid::GetNearbyStructures(GridCoord coord, int radius) {
     vector<Structure*> result;
     for (GridCell* cell : GetNeighbourCells(coord, radius)) {
-        result.push_back(cell->GetStructure());
-        result.push_back(cell->GetWall(WallDirection::NORTH));
-        result.push_back(cell->GetWall(WallDirection::WEST));
+        if (auto s = cell->GetStructure()) result.push_back(s);
+        if (auto s = cell->GetWall(WallDirection::NORTH)) result.push_back(s);
+        if (auto s = cell->GetWall(WallDirection::WEST)) result.push_back(s);
     }
     return result;
 }

@@ -21,7 +21,7 @@ void SpikeTrap::Initialize() {
 
 	maxHealth = 90;
 	health = maxHealth;
-	damage = 75;
+	damage = 65;
 	cooldown = 7;
 	activationDelay = 0.4; //4 frames
 

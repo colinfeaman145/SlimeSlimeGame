@@ -40,6 +40,7 @@ class Enemy : public Entity {
 		void SetFrozen(float duration);
 		bool IsFrozen();
 		float GetAttackCooldown();
+		void SetKilledByPlayer();
 		ResourceType GetDropType() const override;
 		int GetDropAmount() const override;
 
@@ -59,6 +60,7 @@ class Enemy : public Entity {
 		float stuckTime;
 		float frozenTime;
 		bool unfrozen;
+		bool killedByPlayer;
 
 		EnemyType type;
 		int damage;

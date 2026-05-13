@@ -175,6 +175,7 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="SpikeTrap.cpp" />
+    <ClCompile Include="SplashScreens.cpp" />
     <ClCompile Include="Trap.cpp" />
     <ClCompile Include="WorldScene.cpp" />
     <ClCompile Include="Sprite.cpp" />
@@ -230,6 +231,7 @@
     <ClInclude Include="Scene.hpp" />
     <ClInclude Include="ShapeType.hpp" />
     <ClInclude Include="SpikeTrap.hpp" />
+    <ClInclude Include="SplashScreens.hpp" />
     <ClInclude Include="Trap.hpp" />
     <ClInclude Include="WorldScene.hpp" />
     <ClInclude Include="Sprite.hpp" />

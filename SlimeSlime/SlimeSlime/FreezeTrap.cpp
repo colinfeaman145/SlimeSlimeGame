@@ -22,7 +22,7 @@ void FreezeTrap::Initialize() {
 	maxHealth = 120;
 	health = maxHealth;
 	damage = .65; //per frame
-	cooldown = 14;
+	cooldown = 10;
 	activationDelay = 0.28; //4 frames
 
 	Trap::Initialize();

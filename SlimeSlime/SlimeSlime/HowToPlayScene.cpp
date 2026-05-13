@@ -184,6 +184,29 @@ bool HowToPlay::Initialize() {
 	slimeText7->SetPosition(WIDTH * 0.68, HEIGHT * 0.71);
 	UI.push_back(slimeText7);
 
+	//other
+	Text* other1 = new Text();
+	other1->Initialize("*Hint:Close/frozen targets", "../../fonts/pixelFont.ttf", textSize);
+	other1->SetPosition(WIDTH * 0.63, HEIGHT * 0.81);
+	other1->SetColor({ 20, 20, 55 });
+	UI.push_back(other1);
+	Text* other2 = new Text();
+	other2->Initialize("are more vulnerable", "../../fonts/pixelFont.ttf", textSize);
+	other2->SetPosition(WIDTH * 0.67, HEIGHT * 0.85);
+	other2->SetColor({ 20, 20, 55 });
+	UI.push_back(other2);
+
+	Text* other3 = new Text();
+	other3->Initialize("*Hint:Enemies drop more gold", "../../fonts/pixelFont.ttf", textSize);
+	other3->SetPosition(WIDTH * 0.25, HEIGHT * 0.05);
+	other3->SetColor({ 20, 20, 55 });
+	UI.push_back(other3);
+	Text* other4 = new Text();
+	other4->Initialize("when killed by you", "../../fonts/pixelFont.ttf", textSize);
+	other4->SetPosition(WIDTH * 0.27, HEIGHT * 0.1);
+	other4->SetColor({ 20, 20, 55 });
+	UI.push_back(other4);
+
 	return true;
 }
 

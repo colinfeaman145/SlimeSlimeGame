@@ -3,7 +3,7 @@
     "move_right":   ["right", "d"],
     "move_up":      ["up", "w"],
     "move_down":    ["down", "s"],
-    "change_scene": ["tab"],
+    "skip_splash": ["tab", "space"],
     "pause":        ["escape"],
     "build_mode":   ["b", "f"],
     "open_upgrades":   ["u", "r"],

@@ -14,9 +14,9 @@
 #include "Container.hpp"
 #include "Button.hpp"
 
-#define GRID_WIDTH 10000
-#define GRID_HEIGHT 10000
-#define CELL_SIZE 200
+#define GRID_WIDTH 15000
+#define GRID_HEIGHT 15000
+#define CELL_SIZE 150
 
 class WorldScene : public Scene {
 public:
@@ -63,6 +63,7 @@ public:
     void InitializeStructureHUD();
     Container* MakeStructureCard(int i);
     void InitializeUI();
+    void PauseGame();
 
 private:
     bool gameRunning;
@@ -119,8 +120,11 @@ private:
 
     Container* gameOverScreen;
     Container* playerDeathScreen;
+    Container* pauseScreen;
+    bool gamePaused;
     float respawnTimer;
     Text* respawnTimerText;
+    Text* timerText;//for end of game
 
 };
 

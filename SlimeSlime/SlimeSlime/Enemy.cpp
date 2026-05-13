@@ -62,14 +62,15 @@ void Enemy::Process(float deltaTime) {
         Hone();
     }
 
-    if (!attacking->IsAnimating() && framesSinceLastHone >= 5) {//if walking
+    if (!attacking->IsAnimating() && framesSinceLastHone >= 5 && currentAttackCooldown <= 0) {//if walking
         Hone(); //move towards target
         sprite = moving;
         framesSinceLastHone = 0;
     }
    
     context.grid->UpdateEnemyOccupancy(this);
-    SetSpriteDirection(velocity.x < 0);//face correction direciton
+    if (velocity.x != 0)
+        SetSpriteDirection(velocity.x < 0);//face correction direciton
 
     //check if stuck
     float distance = (GetPosition() - previousPosition).Length();
@@ -142,7 +143,8 @@ void Enemy::SetDead() {
 }
 
 void Enemy::Damage(float amount) {
-    Entity::Damage(amount);
+    float damage = IsFrozen() ? amount * 2.5 : amount;
+    Entity::Damage(damage);
     uniform_int_distribution<int> slimeSoundGen(1, 3);
     context.am->PlaySound("SlimeHit" + to_string(slimeSoundGen(gen)), "Default", { position.x, 100, position.y }, { 0, 0, 0 }, Vector2(0.85, 1.15));
 }
@@ -180,13 +182,21 @@ float Enemy::GetAttackCooldown() {
     return attackCooldown;
 }
 
+void Enemy::SetKilledByPlayer() {
+    killedByPlayer = true;
+}
+
 ResourceType Enemy::GetDropType() const {
+    uniform_int_distribution<int> resourceGen(1, 40);
+    if (resourceGen(gen) == 3) return ResourceType::WOOD;
+    if (resourceGen(gen) == 7) return ResourceType::STONE;
     return ResourceType::COIN;
 }
 
 int Enemy::GetDropAmount() const {
-    int scaler = context.gameProgress + 1;
-    uniform_int_distribution<int> coinsGen(3, 6);
+    int scaler = (context.gameProgress * 0.25) + 1;
+    if (killedByPlayer) scaler * 1.5;
+    uniform_int_distribution<int> coinsGen(4, 8);
     switch (type) {
     case(EnemyType::WALL_FOCUS):
         return coinsGen(gen) * ((int)(scaler * 0.75) + 1);
@@ -262,10 +272,11 @@ bool Enemy::IsFrozen() {
 }
 
 void Enemy::HandleCollision(Collidable* other, Vector2 penetration) {
-
+    if (!IsAlive()) return;
     Entity::HandleCollision(other, penetration);
     if (other->GetCollidableType() == CollidableType::ENEMY) return;//dont attack own kind
 
+    if (IsFrozen()) return;//dont attack while frozen;
     if (other->GetCollidableType() == CollidableType::PLAYER) {//if its player
         Attack(static_cast<Player*>(other));
         SetTarget(other);

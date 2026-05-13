@@ -57,6 +57,7 @@ bool Text::BuildTexture() {
 }
 
 void Text::SetText(const string& newText) {
+    if (newText == text) return;
     text = newText;
     BuildTexture();
 }

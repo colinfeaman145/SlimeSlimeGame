@@ -32,12 +32,13 @@ bool Renderer::Initialize(const string& windowTitle, int width, int height, bool
         SDL_WINDOWPOS_CENTERED,
         width, 
         height, 
-        fullscreen ? SDL_WINDOW_FULLSCREEN : 0
+        fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0
     );
     if (!window) {
         std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
         return false;
     }
+    SDL_GetWindowSize(window, &WIDTH, &HEIGHT);
 
     //create renderer
     renderer = SDL_CreateRenderer(

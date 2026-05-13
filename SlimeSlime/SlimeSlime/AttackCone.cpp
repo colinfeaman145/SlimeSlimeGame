@@ -117,6 +117,8 @@ void AttackCone::HandleCollision(Collidable* other, Vector2 penetration) {
 			if (!e->IsAlive()) return;//dont allow hit when dead
 			float dist = Distance(e->GetPosition(), position);
 			e->Damage(CalculateAttackDamage(dist));
+			if (e->GetHealth() <= 0)
+				e->SetKilledByPlayer();
 		}
 
 		if (other->GetCollidableType() == CollidableType::NATURE) {//if its nature

@@ -31,9 +31,15 @@ void Camera::SetZoom(float z) {
 }
 
 void Camera::AdjustZoom(float amount) {
+    float worldWidth = context.grid->GetGridWidth() * context.grid->GetCellSize();
+    float worldHeight = context.grid->GetGridHeight() * context.grid->GetCellSize();
+
+    //can't zoom out past world bounds
+    float minZoom = max((float)WIDTH / worldWidth, (float)HEIGHT / worldHeight) * 1.01f;
+
     zoom += amount;
-    if (zoom < 0.1) zoom = 0.1; // prevent flipping
-    if (zoom > 3.0) zoom = 3;
+    zoom = max(zoom, minZoom); 
+    zoom = min(zoom, 3.0f);
 }
 
 SDL_Rect Camera::GetScreenRect(const SDL_Rect* spriteRect) {

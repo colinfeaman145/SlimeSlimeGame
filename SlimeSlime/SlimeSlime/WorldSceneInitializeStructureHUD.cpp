@@ -12,7 +12,7 @@ void WorldScene::InitializeStructureHUD() {
 	for (int i = 0; i < 7; i++) {//8 = number of structures
 		Container* c = MakeStructureCard(i + 1);
 		structureCards[i] = c;
-		structureHUD->AddSprite(c, structureHUD->GetWidth() * 0.0125 + (HUDColumnSize * i), structureHUD->GetWidth() * 0.0125);
+		structureHUD->AddSprite(c, structureHUD->GetWidth() * 0.0125 + (HUDColumnSize * i), structureHUD->GetHeight() * 0.05);
 	}
 
 	//change material button
@@ -20,7 +20,7 @@ void WorldScene::InitializeStructureHUD() {
 		{ 90, 90, 90 }, { 220, 120, 0 }, { 70, 70, 70 }, { 200, 100, 0 }, 3,
 		[this]() { this->ChangeMaterial(); }, 1.05);
 	Text* changeMatLabel = new Text();
-	changeMatLabel->Initialize("Change Material", "../../fonts/PROXON.ttf", 20);
+	changeMatLabel->Initialize("Change Material", "../../fonts/PROXON.ttf", WIDTH * 0.02);
 	changeMaterialButton->SetImage(changeMatLabel);
 	structureHUD->AddButton(changeMaterialButton, 0, -(HEIGHT * 0.085));
 }
@@ -29,7 +29,7 @@ Container* WorldScene::MakeStructureCard(int i) {
 
 	Structure* structure = GetCurrentStructure(i);
 
-	int HUDSize = structureHUD->GetWidth() * .1;
+	int HUDSize = structureHUD->GetHeight();
 	Container* c = new Container(0, 0, HUDSize * 0.9, HUDSize * 0.9, 
 		{ 0, 0, 0 }, { 0, 0, 0 }, 0, 5);
 	int cWidth = c->GetWidth();

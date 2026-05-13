@@ -11,13 +11,13 @@
 
 class Grid;
 
-#define DEBUGMODE true
-#define GOD_MODE true
+#define DEBUGMODE false
+#define GOD_MODE false
 
 enum class Difficulty {
-    EASY = 130,
-    NORMAL = 100,
-    HARD = 65
+    EASY = 200,
+    NORMAL = 150,
+    HARD = 100
 };
 
 struct GameContext {

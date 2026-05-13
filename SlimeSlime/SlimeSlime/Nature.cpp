@@ -13,9 +13,13 @@ void Nature::Initialize(Sprite* spr, NatureType t, bool canCollide) {
 void Nature::Draw(Renderer* renderer) {
 	Entity::Draw(renderer);
 	pe->Draw(renderer);
+	processedThisFrame = false;//called after process
 }
 
 void Nature::Process(float deltaTime) {
+	if (processedThisFrame) return;
+	processedThisFrame = true;
+
 	Entity::Process(deltaTime);
 	pe->Process(deltaTime);
 }

@@ -1,6 +1,13 @@
 #include "WorldScene.hpp"
 
 void WorldScene::ReadInputs(float deltaTime) {
+
+    if (gamePaused) {
+        if (context.im->IsKeyPressed("pause")) {
+            PauseGame();
+        }
+        return;
+    }
     if (context.im->IsKeyDown("move_left")) {
         MovePlayer(MovementDir::WEST, deltaTime);
     }
@@ -12,6 +19,9 @@ void WorldScene::ReadInputs(float deltaTime) {
     }
     if (context.im->IsKeyDown("move_down")) {
         MovePlayer(MovementDir::SOUTH, deltaTime);
+    }
+    if (context.im->IsKeyPressed("pause")) {
+        PauseGame();
     }
     if (context.im->IsKeyPressed("build_mode")) {
         ToggleBuildMode();
@@ -112,4 +122,9 @@ void WorldScene::ChangeStructure(int s) {
     structureCards[currentStructure - 1]->GetFirstButton()->SetBorderColor({ 70, 70, 70 });
     currentStructure = s;
     structureCards[s - 1]->GetFirstButton()->SetBorderColor({ 255, 50, 50 });
+}
+
+void WorldScene::PauseGame() {
+    gamePaused = !gamePaused;
+    pauseScreen->Toggle();
 }

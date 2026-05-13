@@ -21,8 +21,8 @@ void FireTrap::Initialize() {
 
 	maxHealth = 130;
 	health = maxHealth;
-	damage = 0.7; //per frame
-	cooldown = 10;
+	damage = 0.9; //per frame
+	cooldown = 5;
 	activationDelay = 0.21; //3 frames
 
 	Trap::Initialize();

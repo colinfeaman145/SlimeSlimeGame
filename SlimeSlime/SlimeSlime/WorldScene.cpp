@@ -16,8 +16,9 @@ bool WorldScene::Initialize() {
     buildMode = false;
     currentHoveredCellCoords = { -1, -1 };
     lastHoveredStructure = -1;
-    spawnCooldown = 2.0f;
-    currentSpawnTime = context.gameDifficulty / 5;
+    spawnCooldown = 5.0f;
+    currentSpawnTime = context.gameDifficulty / 4;
+    gamePaused = false;
 
     context.grid = new Grid(GRID_WIDTH, GRID_HEIGHT, CELL_SIZE);
     SDL_Texture* grassTex = context.txm->LoadTexture(context.renderer, "../../assets/grass.png");
@@ -153,13 +154,23 @@ bool WorldScene::Initialize() {
 
 void WorldScene::Process(float deltaTime) {
 
+    if (gamePaused) {
+        ReadInputs(deltaTime);//only reads for unpause
+        pauseScreen->Process(deltaTime);
+        return;//dont process when paused
+    }
+
     //is game over
     if ((!atlas || atlas->IsBroken()) && gameRunning) {
         player->SetDead();
         gameOverScreen->Toggle();
+        if (playerDeathScreen->IsVisible()) playerDeathScreen->Toggle();
+        if (structureHUD->IsVisible()) structureHUD->Toggle();
         atlas = nullptr;
         gameRunning = false;
-    }
+        timerText->SetText("You lasted " + to_string((int)time / 60) + " minutes and " + to_string((int) time % 60) + " seconds");
+        gameOverScreen->AddText(timerText, (gameOverScreen->GetWidth() - timerText->GetWidth()) / 2, gameOverScreen->GetHeight() * 0.35);
+ }
     else if(gameRunning){
         atlas->Process(deltaTime);
     }
@@ -175,7 +186,7 @@ void WorldScene::Process(float deltaTime) {
         respawnTimer -= deltaTime;
         respawnTimerText->SetText(to_string((int)respawnTimer) + " seconds");
     }
-    if (respawnTimer <= 0 && !player->IsAlive()) {
+    if (respawnTimer <= 0 && !player->IsAlive() && gameRunning) {
         playerDeathScreen->Toggle();
         player->Heal(player->GetMaxHealth());
         player->SetAlive();

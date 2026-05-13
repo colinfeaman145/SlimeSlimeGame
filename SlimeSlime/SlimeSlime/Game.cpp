@@ -4,6 +4,7 @@
 #include "WorldScene.hpp"
 #include "MainMenuScene.hpp"
 #include "HowToPlayScene.hpp"
+#include "SplashScreens.hpp"
 
 /*
 CALL PIPELINE
@@ -17,7 +18,7 @@ Sprites call drawTexture to renderer
 Game::Game() {
     //define context
     context.renderer = new Renderer();
-    context.renderer->Initialize("Slime Slime Game", WIDTH, HEIGHT, false);
+    context.renderer->Initialize("Slime Slime Game", WIDTH, HEIGHT, true);
     context.txm = new TextureManager();
     context.fm = new FontManager();
     context.im = new InputManager();
@@ -25,7 +26,7 @@ Game::Game() {
     context.gameDifficulty = (int)Difficulty::NORMAL;
     context.changeScene = [this](int i) { this->ChangeScene(i); };
 
-    currentScene = 0;
+    currentScene = 3;
     running = true;
 
 }
@@ -47,6 +48,7 @@ bool Game::Initialize() {
 
     Scene* menu;
     Scene* htp;
+    Scene* splash;
 
     menu = new MainMenu();
     menu->Initialize();
@@ -55,6 +57,10 @@ bool Game::Initialize() {
     htp = new HowToPlay();
     htp->Initialize();
     scenes[1] = (htp);
+
+    splash = new SplashScreens();
+    splash->Initialize();
+    scenes[3] = (splash);
 
     return true;
 }

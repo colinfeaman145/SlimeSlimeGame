@@ -9,9 +9,9 @@ void Player::Initialize(Vector2 pos, int pullRadius, Vector2 vel, AnimatedSprite
 	SetCanCollide(true);
 	collideType = CollidableType::PLAYER;
 
-	coins = 0;
-	wood = 25;
-	stone = 0;
+	coins = 50;
+	wood = 50;
+	stone = 25;
 	if (GOD_MODE) {
 		coins = 10000000;
 		wood = 10000;
